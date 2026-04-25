@@ -7,13 +7,6 @@
   "module": "src/index.tsx",
   "types": "src/index.tsx",
 
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18",
@@ -21,7 +14,6 @@
   },
 
   "dependencies": {
-    "@iconify/react": "^5.0.2",
     "@ckeditor/ckeditor5-react": "^11.0.0",
     "@gsap/react": "^2.1.2",
     "@phosphor-icons/react": "^2.1.10",

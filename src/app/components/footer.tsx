@@ -9,7 +9,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { ElementType } from "react";
 import { Footer as FooterRC } from "../../libs/react-ultimate-components/src";
-import GoogleMapsRender from "../../libs/react-ultimate-components/src/components/forms/miscellaneous/GoogleMapsRender/index";
+import GoogleMapsRender from "../../libs/react-ultimate-components/src/components/miscellaneous/GoogleMapsRender/index";
 import { landingNavigationItems } from "../../mock";
 import { useStore } from "../providers/StoreProvider";
 import { Section, Subtitle, Title } from "./ui";

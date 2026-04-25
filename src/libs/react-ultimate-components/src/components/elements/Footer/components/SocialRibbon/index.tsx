@@ -59,7 +59,6 @@ export default function SocialRibbon({
         {items.map((item, index) => (
           <li key={index}>
             <Link href={item.href} className="flex items-center">
-            {/* @ts-expect-error different possibilities for iterable ReactNode */}
               {item.iconName === "instagram" ? (
                 <InstagramLogoIcon
                   className={clsx("w-5 h-5 sm:w-7 sm:h-7", iconsClassName)}
