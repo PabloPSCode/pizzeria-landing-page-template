@@ -100,7 +100,7 @@ export default async function RootLayout({
   const storePayload = await getStoreByDomain(host);
 
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="pt-BR" className={fontVariables}>
       <body className="overflow-x-hidden">
         <StoreProvider value={storePayload}>
           <ThemeTokens />

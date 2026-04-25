@@ -3,6 +3,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard, TopMenu } from "react-ultimate-components";
 import Breadcrumb from "react-ultimate-components/src/components/navigation/BreadCrumb/index.tsx";
+import { splitIngredientsList } from "../../../utils/format";
 import { sendMessageWhatsapp } from "../../../utils/helpers.ts";
 import FilterControllerCard from "../../components/FilterControllerCard";
 import { buildTopMenuItems } from "../../constants/home.tsx";
@@ -77,11 +78,6 @@ export default function Home() {
     setPriceRange([minPrice, maxPrice]);
   };
 
-  useEffect(() => {
-    console.log(selectedCategories);
-    console.log(priceRange);
-  }, [selectedCategories, priceRange]);
-
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     const hasSearch =
@@ -113,11 +109,11 @@ export default function Home() {
   return (
     <main className="w-full bg-background text-foreground">
       {/* Top categories */}
-      <div className="w-screen bg-gray-100 dark:bg-gray-900 px-2">
+      <div className="w-screen bg-white px-2">
         <TopMenu
           menuItems={topMenuItems}
-          className="w-full bg-gray-100 dark:bg-gray-900 text-background"
-          itemClassName="text-sm font-semibold text-foreground hover:text-foreground"
+          className="w-full bg-white text-foreground"
+          itemClassName="text-sm font-semibold text-foreground hover:text-primary-600"
         />
       </div>
 
@@ -155,6 +151,7 @@ export default function Home() {
                   imageUrl={product.coverImageUrl ?? product.imageUrls[0]}
                   title={product.name}
                   price={product.priceCents / 100}
+                  ingredients={splitIngredientsList(product.description)}
                   installments={10}
                   installmentValue={(product.priceCents ?? 0) / 1000}
                   ctaLabel="Tenho interesse"

@@ -17,3 +17,14 @@ export const getDefaultDate = () => {
   d.setHours(d.getHours() + 24);
   return d;
 };
+
+export const splitIngredientsList = (ingredients?: string | null) => {
+  if (!ingredients) {
+    return [];
+  }
+
+  return ingredients
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};

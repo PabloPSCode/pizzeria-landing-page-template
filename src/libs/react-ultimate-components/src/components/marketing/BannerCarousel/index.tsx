@@ -41,6 +41,8 @@ export interface BannerCarouselProps {
   spaceBetween?: number; // kept for API compatibility (ignored → always 0)
   breakpoints?: Record<number, BannerBreakpoint>; // kept for API compatibility
   className?: string;
+  /** Classe aplicada a cada slide (use para padronizar altura em px). */
+  slideClassName?: string;
 }
 
 export default function BannerCarousel({
@@ -56,6 +58,7 @@ export default function BannerCarousel({
     pauseOnMouseEnter: true,
   },
   className,
+  slideClassName = "h-[480px] sm:h-[560px] lg:h-[640px]",
 }: BannerCarouselProps) {
   const swiperRef = useRef<SwiperInstance | null>(null);
 
@@ -92,7 +95,7 @@ export default function BannerCarousel({
 
   return (
     <section className={clsx("w-full", className)}>
-      <div className="relative w-full">
+      <div className="relative w-full overflow-hidden">
         {/* Navigation buttons are OUTSIDE the slides so they work on all slides */}
         {showNavigation && !hidePrevButton && (
           <button
@@ -102,11 +105,12 @@ export default function BannerCarousel({
             className={clsx(
               "absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20",
               "inline-flex items-center justify-center rounded-full",
-              "w-6 h-6 sm:w-10 sm:h-10",
-              "bg-transparent text-white"
+              "w-10 h-10 sm:w-12 sm:h-12",
+              "bg-white/85 text-foreground shadow-lg ring-1 ring-white/25 backdrop-blur-md",
+              "transition hover:bg-white"
             )}
           >
-            <CaretCircleLeftIcon weight="fill" size={24} />
+            <CaretCircleLeftIcon weight="fill" size={28} />
           </button>
         )}
 
@@ -118,10 +122,12 @@ export default function BannerCarousel({
             className={clsx(
               "absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20",
               "inline-flex items-center justify-center rounded-full",
-              "bg-transparent text-white"
+              "w-10 h-10 sm:w-12 sm:h-12",
+              "bg-white/85 text-foreground shadow-lg ring-1 ring-white/25 backdrop-blur-md",
+              "transition hover:bg-white"
             )}
           >
-            <CaretCircleRightIcon weight="fill" size={24} />
+            <CaretCircleRightIcon weight="fill" size={28} />
           </button>
         )}
 
@@ -141,10 +147,10 @@ export default function BannerCarousel({
               ? {
                   clickable: false,
                   bulletClass: clsx(
-                    "swiper-pagination-bullet bg-foreground/20 w-2 h-2 rounded-full cursor-auto"
+                    "swiper-pagination-bullet bg-white/30 w-2 h-2 rounded-full cursor-auto"
                   ),
                   bulletActiveClass: clsx(
-                    "swiper-pagination-bullet-active bg-primary-600 w-2 h-2 rounded-full cursor-auto"
+                    "swiper-pagination-bullet-active bg-primary-500 w-2 h-2 rounded-full cursor-auto"
                   ),
                 }
               : undefined
@@ -155,10 +161,13 @@ export default function BannerCarousel({
           autoplay={autoplayOptions as never}
           // Prevent side padding/margins from showing next slide
           centeredSlides={false}
-          className="w-full"
+          className="w-full overflow-hidden"
         >
           {items.map((it, i) => (
-            <SwiperSlide key={i} className="min-h-[60vh]">
+            <SwiperSlide
+              key={i}
+              className={clsx("w-full overflow-hidden", slideClassName)}
+            >
               {/* Slide wrapper follows your theme tokens */}
               <div className="w-full h-full bg-card text-card-foreground overflow-hidden">
                 {it}

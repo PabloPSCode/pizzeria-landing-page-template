@@ -16,6 +16,8 @@ interface ProductCardProps {
   title: string;
   /** Preço do produto (valor numérico). */
   price: number;
+  /** Lista de ingredientes exibida abaixo da imagem. */
+  ingredients?: string[];
   /** Avaliação do produto (0 a 5). */
   rating?: Rating;
   /** Quantidade de parcelas (opcional). */
@@ -63,6 +65,7 @@ export default function ProductCard({
   imageUrl,
   title,
   price,
+  ingredients = [],
   rating,
   installments,
   installmentValue,
@@ -142,6 +145,7 @@ export default function ProductCard({
       className={clsx(
         "group flex flex-col rounded-2xl border border-border-card bg-bg-card shadow-sm text-foreground",
         "p-4 sm:p-5 gap-3 max-w-full w-full transition-transform hover:-translate-y-0.5 hover:shadow-md",
+        "min-h-[470px] sm:min-h-[510px]",
         className
       )}
       role="article"
@@ -167,7 +171,24 @@ export default function ProductCard({
       </div>
 
       {/* Título */}
-      <h3 className="text-sm sm:text-base md:text-lg font-semibold text-foreground uppercase tracking-tight mb-1 line-clamp-2">
+      {ingredients.length > 0 && (
+        <div className="mb-1 min-h-[88px] rounded-xl bg-foreground/[0.03] px-4 py-3">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-600">
+            Ingredientes
+          </span>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-foreground/70 sm:text-sm">
+            {ingredients.slice(0, 4).map((ingredient) => (
+              <li key={ingredient}>
+                <span className="block line-clamp-1 break-words">
+                  {ingredient}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <h3 className="min-w-0 break-words text-sm sm:text-base md:text-lg font-semibold text-foreground uppercase tracking-tight mb-1 line-clamp-2">
         {title}
       </h3>
 
