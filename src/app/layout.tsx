@@ -15,6 +15,7 @@ import { getStoreByDomain } from "../lib/store-data";
 import Footer from "./components/footer";
 import Header from "./components/header";
 import ThemeTokens from "./components/ThemeTokens";
+import { OrderCartProvider } from "./providers/OrderCartProvider";
 import { StoreProvider } from "./providers/StoreProvider";
 // @ts-ignore: Allow importing global CSS without type declarations
 import "./globals.css";
@@ -103,10 +104,12 @@ export default async function RootLayout({
     <html lang="pt-BR" className={fontVariables}>
       <body className="overflow-x-hidden">
         <StoreProvider value={storePayload}>
-          <ThemeTokens />
-          <Header />
-          {children}
-          <Footer />
+          <OrderCartProvider>
+            <ThemeTokens />
+            <Header />
+            {children}
+            <Footer />
+          </OrderCartProvider>
         </StoreProvider>
       </body>
     </html>

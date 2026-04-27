@@ -7,17 +7,28 @@ import { splitIngredientsList } from "../../../utils/format";
 import { sendMessageWhatsapp } from "../../../utils/helpers.ts";
 import FilterControllerCard from "../../components/FilterControllerCard";
 import { buildTopMenuItems } from "../../constants/home.tsx";
+import { useOrderCart } from "../../providers/OrderCartProvider";
 import { useStore } from "../../providers/StoreProvider";
 
 type PriceRange = [number, number];
+const PIZZA_CATEGORY_SLUGS = new Set([
+  "pizzas-salgadas",
+  "pizzas-doces",
+  "borda-recheada",
+]);
 
 export default function Home() {
   const { categories, products } = useStore();
+  const { addPizzaOrder } = useOrderCart();
   const pathname = usePathname();
   const normalizedPathname =
     pathname.replace(/^\/sites\/[^/]+/, "") || "/";
   const currentPath = normalizedPathname;
   const topMenuItems = buildTopMenuItems(categories);
+  const categorySlugById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category.slug])),
+    [categories]
+  );
 
   const searchParams = useSearchParams();
   const query = searchParams.get("search")?.trim() ?? "";
@@ -145,23 +156,46 @@ export default function Home() {
         <div className="lg:col-span-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => {
+              const productCategorySlug = product.categoryId
+                ? categorySlugById.get(product.categoryId)
+                : null;
+              const isPizzaProduct = productCategorySlug
+                ? PIZZA_CATEGORY_SLUGS.has(productCategorySlug)
+                : false;
+
               return (
                 <ProductCard
                   key={product.id}
+                  productId={product.id}
                   imageUrl={product.coverImageUrl ?? product.imageUrls[0]}
                   title={product.name}
                   price={product.priceCents / 100}
+                  productDescription={product.description}
                   ingredients={splitIngredientsList(product.description)}
                   installments={10}
                   installmentValue={(product.priceCents ?? 0) / 1000}
-                  ctaLabel="Tenho interesse"
+                  ctaLabel={isPizzaProduct ? "Adicionar ao pedido" : "Tenho interesse"}
                   shareLabel="Compartilhar"
                   className="h-full"
-                  onAddToCart={() =>
-                    sendMessageWhatsapp(
-                      `Olá, tenho interesse no produto ${product.name} (Código: ${product.id}).`,
-                      "5531985187963"
+                  enablePizzaOrderAssistant={isPizzaProduct}
+                  onPizzaOrderFinish={(order) =>
+                    addPizzaOrder(
+                      {
+                        productId: product.id,
+                        title: product.name,
+                        imageUrl: product.coverImageUrl ?? product.imageUrls[0],
+                      },
+                      order
                     )
+                  }
+                  onAddToCart={
+                    isPizzaProduct
+                      ? undefined
+                      : () =>
+                          sendMessageWhatsapp(
+                            `Olá, tenho interesse no produto ${product.name} (Código: ${product.id}).`,
+                            "5531985187963"
+                          )
                   }
                 />
               );

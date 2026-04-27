@@ -32,6 +32,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.camisariacolombo.com.br",
       },
+      {
+        protocol: "https",
+        hostname: "andinacocacola.vtexassets.com",
+      },
+      {
+        protocol: "https",
+        hostname: "seabrafoods.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cms.kaiser.com.br",
+      },
     ],
   },
 };

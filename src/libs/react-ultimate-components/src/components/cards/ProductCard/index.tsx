@@ -4,18 +4,28 @@ import { ShareNetworkIcon, StarIcon, TimerIcon } from "@phosphor-icons/react";
 import clsx from "clsx";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import PizzaOrderAssistentModal, {
+  defaultPizzaOrderAssistentFlavors,
+  type PizzaOrderAssistentFlavorOption,
+  type PizzaOrderAssistentModalProps,
+  type PizzaOrderAssistentOrder,
+} from "../../modals/PizzaOrderAssistentModal/index";
 import { getDefaultDate } from "../../../../../../utils/format";
 import { formatBRL } from "../../../utils/format";
 
 type Rating = 0 | 1 | 2 | 3 | 4 | 5;
 
 interface ProductCardProps {
+  /** Identificador único do produto. */
+  productId?: string;
   /** URL da imagem do produto. */
   imageUrl: string;
   /** Título do produto. */
   title: string;
   /** Preço do produto (valor numérico). */
   price: number;
+  /** Descrição resumida do produto. */
+  productDescription?: string;
   /** Lista de ingredientes exibida abaixo da imagem. */
   ingredients?: string[];
   /** Avaliação do produto (0 a 5). */
@@ -32,10 +42,19 @@ interface ProductCardProps {
   className?: string;
   /** Callback ao clicar no botão de ação. */
   onAddToCart?: () => void;
+  /** Callback ao concluir o assistente de pedido. */
+  onPizzaOrderFinish?: (order: PizzaOrderAssistentOrder) => void;
   /** Callback ao clicar no botão de compartilhar. */
   onShare?: () => void;
   /** Callback ao ver os detalhes do produto. */
   onSeeProductDetails?: (productId?: string) => void;
+  /** Define se o botão principal deve abrir o assistente de pizza. */
+  enablePizzaOrderAssistant?: boolean;
+  /** Props adicionais repassadas ao modal do assistente. */
+  pizzaOrderAssistantProps?: Omit<
+    PizzaOrderAssistentModalProps,
+    "open" | "onClose" | "onFinish"
+  >;
 
   /**
    * Se deve mostrar a promoção (deal).
@@ -62,9 +81,11 @@ interface ProductCardProps {
  *   por padrão encerra em 24 horas (ou no horário definido em `dealEndsWithIn`).
  */
 export default function ProductCard({
+  productId,
   imageUrl,
   title,
   price,
+  productDescription,
   ingredients = [],
   rating,
   installments,
@@ -72,13 +93,17 @@ export default function ProductCard({
   ctaLabel = "Tenho interesse",
   shareLabel = "Compartilhar",
   onAddToCart,
+  onPizzaOrderFinish,
   onShare,
   onSeeProductDetails,
+  enablePizzaOrderAssistant = false,
+  pizzaOrderAssistantProps,
   showDeal,
   dealPrice,
   dealEndsWithIn,
   className,
 }: ProductCardProps) {
+  const [isPizzaAssistantOpen, setIsPizzaAssistantOpen] = useState(false);
   const formattedBasePrice = formatBRL(price);
   const effectiveDealPrice = dealPrice ?? price;
   const formattedDealPrice = formatBRL(effectiveDealPrice);
@@ -119,6 +144,91 @@ export default function ProductCard({
   }, [dealEndsAt, showDeal]);
 
   const dealExpired = showDeal ? remainingMs <= 0 : false;
+  const shouldOpenPizzaAssistant = enablePizzaOrderAssistant && !dealExpired;
+
+  const normalizedTitle = useMemo(
+    () =>
+      title
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim(),
+    [title]
+  );
+
+  const generatedFlavorId = useMemo(() => {
+    if (productId) return productId;
+
+    return title
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, [productId, title]);
+
+  const assistantFlavorOptions = useMemo(() => {
+    const baseOptions =
+      pizzaOrderAssistantProps?.flavorOptions ?? defaultPizzaOrderAssistentFlavors;
+    const matchedOption = baseOptions.find((option) => {
+      const normalizedOptionName = option.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+
+      return option.id === generatedFlavorId || normalizedOptionName === normalizedTitle;
+    });
+
+    if (matchedOption) {
+      return {
+        options: baseOptions,
+        selectedFlavorId: matchedOption.id,
+      };
+    }
+
+    const derivedOption: PizzaOrderAssistentFlavorOption = {
+      id: generatedFlavorId,
+      name: title,
+      price,
+      description:
+        productDescription ||
+        ingredients.join(", ") ||
+        "Sabor selecionado a partir do card do produto.",
+      imageUrl,
+      ingredients,
+      badge: "Seleção atual",
+    };
+
+    return {
+      options: [derivedOption, ...baseOptions],
+      selectedFlavorId: derivedOption.id,
+    };
+  }, [
+    generatedFlavorId,
+    imageUrl,
+    ingredients,
+    normalizedTitle,
+    pizzaOrderAssistantProps?.flavorOptions,
+    price,
+    productDescription,
+    title,
+  ]);
+
+  const handlePrimaryAction = () => {
+    if (shouldOpenPizzaAssistant) {
+      setIsPizzaAssistantOpen(true);
+      return;
+    }
+
+    onAddToCart?.();
+  };
+
+  const handlePizzaAssistantFinish = (order: PizzaOrderAssistentOrder) => {
+    onPizzaOrderFinish?.(order);
+    setIsPizzaAssistantOpen(false);
+  };
 
   // === Estrelas de avaliação ===
   const renderStars = (value: Rating) => {
@@ -155,7 +265,7 @@ export default function ProductCard({
       <div className="mb-2 sm:mb-3">
         <button
           type="button"
-          onClick={() => onSeeProductDetails?.()}
+          onClick={() => onSeeProductDetails?.(productId)}
           className="w-full overflow-hidden h-28 sm:h-32 md:h-40 flex items-center justify-center relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/40"
         >
           <Image
@@ -243,7 +353,7 @@ export default function ProductCard({
       <div className="flex flex-col gap-2 mt-auto">
         <button
           type="button"
-          onClick={onAddToCart}
+          onClick={handlePrimaryAction}
           disabled={showDeal ? dealExpired : false}
           className={clsx(
             "inline-flex items-center justify-center gap-2 rounded-md px-4 py-3",
@@ -275,6 +385,26 @@ export default function ProductCard({
           </button>
         )}
       </div>
+
+      {shouldOpenPizzaAssistant ? (
+        <PizzaOrderAssistentModal
+          {...pizzaOrderAssistantProps}
+          open={isPizzaAssistantOpen}
+          onClose={() => setIsPizzaAssistantOpen(false)}
+          onFinish={handlePizzaAssistantFinish}
+          title={
+            pizzaOrderAssistantProps?.title ?? `Monte seu pedido de ${title}`
+          }
+          resetOnOpen={pizzaOrderAssistantProps?.resetOnOpen ?? true}
+          flavorOptions={assistantFlavorOptions.options}
+          defaultFlavorMode={pizzaOrderAssistantProps?.defaultFlavorMode ?? 1}
+          defaultFlavorIds={
+            pizzaOrderAssistantProps?.defaultFlavorIds ?? [
+              assistantFlavorOptions.selectedFlavorId,
+            ]
+          }
+        />
+      ) : null}
     </div>
   );
 }

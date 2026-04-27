@@ -57,9 +57,6 @@ export default function Footer() {
     storeData.store.deliveryMethods.motoBoy
       ? { label: "Entrega via motoboy" }
       : null,
-    storeData.store.deliveryMethods.ownVehicle
-      ? { label: "Entrega com frota própria" }
-      : null,
   ].filter(Boolean) as { label: string }[];
 
   const socialItems = [

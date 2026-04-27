@@ -33,11 +33,17 @@ import {
   Title,
   ZoomContainer,
 } from "./components/ui";
+import { useOrderCart } from "./providers/OrderCartProvider";
 import { useStore } from "./providers/StoreProvider";
 
 type CategoryFilter = "todos" | MenuCategorySlug;
 
 const PROMO_DEADLINE = new Date(Date.now() + 20 * 60 * 60 * 1000).toISOString();
+const PIZZA_CATEGORY_SLUGS = new Set<MenuCategorySlug>([
+  "pizzas-salgadas",
+  "pizzas-doces",
+  "borda-recheada",
+]);
 
 const INFO_ICON_BY_KEY = {
   timer: TimerIcon,
@@ -49,6 +55,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("todos");
   const router = useRouter();
+  const { addPizzaOrder } = useOrderCart();
   const { storeData } = useStore();
 
   const filteredProducts = useMemo(() => {
@@ -181,30 +188,53 @@ export default function Home() {
             </ZoomContainer>
           ))}
         </div>
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredProducts.map((product, index) => (
-            <ZoomContainer
-              key={product.id}
-              once={index < 6}
-              delayMs={(index % 3) * 65}
-            >
-              <div className="flex h-full flex-col gap-3">
-                <ProductCard
-                  imageUrl={product.image}
-                  title={product.name}
-                  price={product.price}
-                  ingredients={splitIngredientsList(product.ingredientes)}
-                  rating={product.rating}
-                  ctaLabel="Adicionar ao pedido"
-                  className="h-full"
-                  onAddToCart={() => handleWhatsappOrder(product.name)}
-                  onSeeProductDetails={() =>
-                    router.push(`/produto/${product.slug}`)
-                  }
-                />
-              </div>
-            </ZoomContainer>
-          ))}
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {filteredProducts.map((product, index) => {
+            const isPizzaProduct = PIZZA_CATEGORY_SLUGS.has(product.categorySlug);
+
+            return (
+              <ZoomContainer
+                key={product.id}
+                once={index < 6}
+                delayMs={(index % 3) * 65}
+              >
+                <div className="flex h-full flex-col gap-3">
+                  <ProductCard
+                    productId={product.id}
+                    imageUrl={product.image}
+                    title={product.name}
+                    price={product.price}
+                    productDescription={product.ingredientes}
+                    ingredients={splitIngredientsList(product.ingredientes)}
+                    rating={product.rating}
+                    ctaLabel={
+                      isPizzaProduct ? "Adicionar ao pedido" : "Tenho interesse"
+                    }
+                    className="h-full"
+                    enablePizzaOrderAssistant={isPizzaProduct}
+                    onPizzaOrderFinish={(order) =>
+                      addPizzaOrder(
+                        {
+                          productId: product.id,
+                          title: product.name,
+                          imageUrl: product.image,
+                        },
+                        order
+                      )
+                    }
+                    onAddToCart={
+                      isPizzaProduct
+                        ? undefined
+                        : () => handleWhatsappOrder(product.name)
+                    }
+                    onSeeProductDetails={() =>
+                      router.push(`/produto/${product.slug}`)
+                    }
+                  />
+                </div>
+              </ZoomContainer>
+            );
+          })}
         </div>
       </Section>
 
