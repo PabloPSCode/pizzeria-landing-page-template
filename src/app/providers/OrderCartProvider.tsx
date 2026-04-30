@@ -9,15 +9,16 @@ import {
   type ReactNode,
 } from "react";
 import type { Product as NavigationCartProduct } from "../../libs/react-ultimate-components/src/components/navigation/Cart/components/CartItem";
+import type { OrderAssistentOrder } from "../../libs/react-ultimate-components/src/components/modals/OrderAssistentModal";
 import type { PizzaOrderAssistentOrder } from "../../libs/react-ultimate-components/src/components/modals/PizzaOrderAssistentModal";
 import { formatBRL } from "../../libs/react-ultimate-components/src/utils/format";
 
 export interface OrderCartItem extends NavigationCartProduct {
   details?: string[];
-  order?: PizzaOrderAssistentOrder;
+  order?: PizzaOrderAssistentOrder | OrderAssistentOrder;
 }
 
-interface PizzaCartSeed {
+interface OrderCartSeed {
   productId?: string;
   title: string;
   imageUrl?: string;
@@ -34,8 +35,12 @@ interface OrderCartContextValue {
   setItems: (items: OrderCartItem[]) => void;
   clearCart: () => void;
   addPizzaOrder: (
-    seed: PizzaCartSeed,
+    seed: OrderCartSeed,
     order: PizzaOrderAssistentOrder
+  ) => OrderCartItem;
+  addOrder: (
+    seed: OrderCartSeed,
+    order: OrderAssistentOrder
   ) => OrderCartItem;
 }
 
@@ -70,6 +75,36 @@ const buildPizzaCartItemDetails = (order: PizzaOrderAssistentOrder) => {
         .map((ingredient) => ingredient.name)
         .join(", ")}`
     );
+  }
+
+  if (order.candies.length > 0) {
+    details.push(
+      `Doces: ${order.candies
+        .map((candy) => `${candy.quantity}x ${candy.name}`)
+        .join(", ")}`
+    );
+  }
+
+  if (order.drinks.length > 0) {
+    details.push(
+      `Bebidas: ${order.drinks
+        .map((drink) => `${drink.quantity}x ${drink.name}`)
+        .join(", ")}`
+    );
+  }
+
+  if (order.observation.trim()) {
+    details.push(`Obs.: ${order.observation.trim()}`);
+  }
+
+  return details;
+};
+
+const buildOrderCartItemDetails = (order: OrderAssistentOrder) => {
+  const details: string[] = [];
+
+  if (order.foodIngredients.length > 0) {
+    details.push(`Composição: ${order.foodIngredients.join(", ")}`);
   }
 
   if (order.candies.length > 0) {
@@ -140,7 +175,7 @@ export function OrderCartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => setItems([]), []);
 
   const addPizzaOrder = useCallback(
-    (seed: PizzaCartSeed, order: PizzaOrderAssistentOrder) => {
+    (seed: OrderCartSeed, order: PizzaOrderAssistentOrder) => {
       const primaryFlavor = order.flavors[0];
       const name =
         order.flavorMode === 2
@@ -159,6 +194,30 @@ export function OrderCartProvider({ children }: { children: ReactNode }) {
         quantity: 1,
         imageUrl,
         details: buildPizzaCartItemDetails(order),
+        order,
+      };
+
+      setItems((previousItems) => [...previousItems, nextItem]);
+      setIsCartOpen(true);
+
+      return nextItem;
+    },
+    []
+  );
+
+  const addOrder = useCallback(
+    (seed: OrderCartSeed, order: OrderAssistentOrder) => {
+      const name = order.foodName || seed.title;
+
+      const nextItem: OrderCartItem = {
+        id: `${
+          seed.productId ? normalizeId(seed.productId) : normalizeId(name)
+        }-${Date.now()}`,
+        name,
+        price: order.totalPrice,
+        quantity: 1,
+        imageUrl: seed.imageUrl,
+        details: buildOrderCartItemDetails(order),
         order,
       };
 
@@ -190,8 +249,10 @@ export function OrderCartProvider({ children }: { children: ReactNode }) {
       setItems,
       clearCart,
       addPizzaOrder,
+      addOrder,
     }),
     [
+      addOrder,
       addPizzaOrder,
       clearCart,
       closeCart,

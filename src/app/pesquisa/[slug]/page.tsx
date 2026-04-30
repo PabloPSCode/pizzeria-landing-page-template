@@ -16,10 +16,14 @@ const PIZZA_CATEGORY_SLUGS = new Set([
   "pizzas-doces",
   "borda-recheada",
 ]);
+const ORDER_ASSISTANT_CATEGORY_SLUGS = new Set([
+  "burguers-artesanais",
+  "croissants-recheados",
+]);
 
 export default function Home() {
   const { categories, products } = useStore();
-  const { addPizzaOrder } = useOrderCart();
+  const { addPizzaOrder, addOrder } = useOrderCart();
   const pathname = usePathname();
   const normalizedPathname =
     pathname.replace(/^\/sites\/[^/]+/, "") || "/";
@@ -162,6 +166,9 @@ export default function Home() {
               const isPizzaProduct = productCategorySlug
                 ? PIZZA_CATEGORY_SLUGS.has(productCategorySlug)
                 : false;
+              const usesOrderAssistant = productCategorySlug
+                ? ORDER_ASSISTANT_CATEGORY_SLUGS.has(productCategorySlug)
+                : false;
 
               return (
                 <ProductCard
@@ -174,10 +181,15 @@ export default function Home() {
                   ingredients={splitIngredientsList(product.description)}
                   installments={10}
                   installmentValue={(product.priceCents ?? 0) / 1000}
-                  ctaLabel={isPizzaProduct ? "Adicionar ao pedido" : "Tenho interesse"}
+                  ctaLabel={
+                    isPizzaProduct || usesOrderAssistant
+                      ? "Adicionar ao pedido"
+                      : "Tenho interesse"
+                  }
                   shareLabel="Compartilhar"
                   className="h-full"
                   enablePizzaOrderAssistant={isPizzaProduct}
+                  enableOrderAssistant={usesOrderAssistant}
                   onPizzaOrderFinish={(order) =>
                     addPizzaOrder(
                       {
@@ -188,8 +200,18 @@ export default function Home() {
                       order
                     )
                   }
+                  onOrderFinish={(order) =>
+                    addOrder(
+                      {
+                        productId: product.id,
+                        title: product.name,
+                        imageUrl: product.coverImageUrl ?? product.imageUrls[0],
+                      },
+                      order
+                    )
+                  }
                   onAddToCart={
-                    isPizzaProduct
+                    isPizzaProduct || usesOrderAssistant
                       ? undefined
                       : () =>
                           sendMessageWhatsapp(

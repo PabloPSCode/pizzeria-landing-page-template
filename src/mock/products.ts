@@ -124,6 +124,39 @@ export const menuProducts: MenuProductMock[] = [
     rating: 4,
   },
   {
+    id: "prod-x-egg-bacon",
+    slug: "x-egg-bacon",
+    categorySlug: "burguers-artesanais",
+    name: "X-Egg Bacon",
+    price: 38.9,
+    ingredientes:
+      "Pão brioche, burger 180g, queijo prato, ovo caipira, bacon crocante e maionese da casa.",
+    image: "/burguer1.webp",
+    rating: 5,
+  },
+  {
+    id: "prod-x-bacon-bbq",
+    slug: "x-bacon-bbq",
+    categorySlug: "burguers-artesanais",
+    name: "X-Bacon BBQ",
+    price: 39.9,
+    ingredientes:
+      "Burger 180g, cheddar cremoso, bacon em dobro, cebola caramelizada e molho barbecue artesanal.",
+    image: "/burguer2.jpg",
+    rating: 5,
+  },
+  {
+    id: "prod-x-salada-artesanal",
+    slug: "x-salada-artesanal",
+    categorySlug: "burguers-artesanais",
+    name: "X-Salada Artesanal",
+    price: 34.9,
+    ingredientes:
+      "Pão brioche, burger 160g, queijo prato, alface americana, tomate fresco, picles e maionese especial.",
+    image: "/burguer1.webp",
+    rating: 4,
+  },
+  {
     id: "prod-croissant-frango-cremoso",
     slug: "croissant-frango-cremoso",
     categorySlug: "croissants-recheados",

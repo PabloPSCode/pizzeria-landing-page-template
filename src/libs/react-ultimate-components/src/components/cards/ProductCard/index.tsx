@@ -4,6 +4,10 @@ import { ShareNetworkIcon, StarIcon, TimerIcon } from "@phosphor-icons/react";
 import clsx from "clsx";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import OrderAssistentModal, {
+  type OrderAssistentModalProps,
+  type OrderAssistentOrder,
+} from "../../modals/OrderAssistentModal/index";
 import PizzaOrderAssistentModal, {
   defaultPizzaOrderAssistentFlavors,
   type PizzaOrderAssistentFlavorOption,
@@ -44,15 +48,24 @@ interface ProductCardProps {
   onAddToCart?: () => void;
   /** Callback ao concluir o assistente de pedido. */
   onPizzaOrderFinish?: (order: PizzaOrderAssistentOrder) => void;
+  /** Callback ao concluir o assistente de pedido generico. */
+  onOrderFinish?: (order: OrderAssistentOrder) => void;
   /** Callback ao clicar no botão de compartilhar. */
   onShare?: () => void;
   /** Callback ao ver os detalhes do produto. */
   onSeeProductDetails?: (productId?: string) => void;
   /** Define se o botão principal deve abrir o assistente de pizza. */
   enablePizzaOrderAssistant?: boolean;
+  /** Define se o botão principal deve abrir o assistente de pedido generico. */
+  enableOrderAssistant?: boolean;
   /** Props adicionais repassadas ao modal do assistente. */
   pizzaOrderAssistantProps?: Omit<
     PizzaOrderAssistentModalProps,
+    "open" | "onClose" | "onFinish"
+  >;
+  /** Props adicionais repassadas ao modal do assistente de pedido generico. */
+  orderAssistantProps?: Omit<
+    OrderAssistentModalProps,
     "open" | "onClose" | "onFinish"
   >;
 
@@ -94,16 +107,20 @@ export default function ProductCard({
   shareLabel = "Compartilhar",
   onAddToCart,
   onPizzaOrderFinish,
+  onOrderFinish,
   onShare,
   onSeeProductDetails,
   enablePizzaOrderAssistant = false,
+  enableOrderAssistant = false,
   pizzaOrderAssistantProps,
+  orderAssistantProps,
   showDeal,
   dealPrice,
   dealEndsWithIn,
   className,
 }: ProductCardProps) {
   const [isPizzaAssistantOpen, setIsPizzaAssistantOpen] = useState(false);
+  const [isOrderAssistantOpen, setIsOrderAssistantOpen] = useState(false);
   const formattedBasePrice = formatBRL(price);
   const effectiveDealPrice = dealPrice ?? price;
   const formattedDealPrice = formatBRL(effectiveDealPrice);
@@ -145,6 +162,7 @@ export default function ProductCard({
 
   const dealExpired = showDeal ? remainingMs <= 0 : false;
   const shouldOpenPizzaAssistant = enablePizzaOrderAssistant && !dealExpired;
+  const shouldOpenOrderAssistant = enableOrderAssistant && !dealExpired;
 
   const normalizedTitle = useMemo(
     () =>
@@ -222,12 +240,22 @@ export default function ProductCard({
       return;
     }
 
+    if (shouldOpenOrderAssistant) {
+      setIsOrderAssistantOpen(true);
+      return;
+    }
+
     onAddToCart?.();
   };
 
   const handlePizzaAssistantFinish = (order: PizzaOrderAssistentOrder) => {
     onPizzaOrderFinish?.(order);
     setIsPizzaAssistantOpen(false);
+  };
+
+  const handleOrderAssistantFinish = (order: OrderAssistentOrder) => {
+    onOrderFinish?.(order);
+    setIsOrderAssistantOpen(false);
   };
 
   // === Estrelas de avaliação ===
@@ -403,6 +431,27 @@ export default function ProductCard({
               assistantFlavorOptions.selectedFlavorId,
             ]
           }
+        />
+      ) : null}
+
+      {shouldOpenOrderAssistant ? (
+        <OrderAssistentModal
+          {...orderAssistantProps}
+          open={isOrderAssistantOpen}
+          onClose={() => setIsOrderAssistantOpen(false)}
+          onFinish={handleOrderAssistantFinish}
+          title={
+            orderAssistantProps?.title ?? `Monte seu pedido de ${title}`
+          }
+          resetOnOpen={orderAssistantProps?.resetOnOpen ?? true}
+          foodName={orderAssistantProps?.foodName ?? title}
+          foodDescription={
+            orderAssistantProps?.foodDescription ?? productDescription
+          }
+          foodIngredients={
+            orderAssistantProps?.foodIngredients ?? ingredients
+          }
+          foodBasePrice={orderAssistantProps?.foodBasePrice ?? price}
         />
       ) : null}
     </div>

@@ -44,6 +44,10 @@ const PIZZA_CATEGORY_SLUGS = new Set<MenuCategorySlug>([
   "pizzas-doces",
   "borda-recheada",
 ]);
+const ORDER_ASSISTANT_CATEGORY_SLUGS = new Set<MenuCategorySlug>([
+  "burguers-artesanais",
+  "croissants-recheados",
+]);
 
 const INFO_ICON_BY_KEY = {
   timer: TimerIcon,
@@ -55,7 +59,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("todos");
   const router = useRouter();
-  const { addPizzaOrder } = useOrderCart();
+  const { addPizzaOrder, addOrder } = useOrderCart();
   const { storeData } = useStore();
 
   const filteredProducts = useMemo(() => {
@@ -191,6 +195,9 @@ export default function Home() {
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredProducts.map((product, index) => {
             const isPizzaProduct = PIZZA_CATEGORY_SLUGS.has(product.categorySlug);
+            const usesOrderAssistant = ORDER_ASSISTANT_CATEGORY_SLUGS.has(
+              product.categorySlug
+            );
 
             return (
               <ZoomContainer
@@ -208,10 +215,13 @@ export default function Home() {
                     ingredients={splitIngredientsList(product.ingredientes)}
                     rating={product.rating}
                     ctaLabel={
-                      isPizzaProduct ? "Adicionar ao pedido" : "Tenho interesse"
+                      isPizzaProduct || usesOrderAssistant
+                        ? "Adicionar ao pedido"
+                        : "Tenho interesse"
                     }
                     className="h-full"
                     enablePizzaOrderAssistant={isPizzaProduct}
+                    enableOrderAssistant={usesOrderAssistant}
                     onPizzaOrderFinish={(order) =>
                       addPizzaOrder(
                         {
@@ -222,8 +232,18 @@ export default function Home() {
                         order
                       )
                     }
+                    onOrderFinish={(order) =>
+                      addOrder(
+                        {
+                          productId: product.id,
+                          title: product.name,
+                          imageUrl: product.image,
+                        },
+                        order
+                      )
+                    }
                     onAddToCart={
-                      isPizzaProduct
+                      isPizzaProduct || usesOrderAssistant
                         ? undefined
                         : () => handleWhatsappOrder(product.name)
                     }
@@ -258,7 +278,7 @@ export default function Home() {
               </Subtitle>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="#categorias"
+                  href="#cardapio"
                   className="inline-flex rounded-full bg-primary-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-600"
                 >
                   Ver cardápio
