@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -45,6 +46,7 @@ interface OrderCartContextValue {
 }
 
 const OrderCartContext = createContext<OrderCartContextValue | null>(null);
+const ORDER_CART_STORAGE_KEY_PREFIX = "@monlevadepizzas:order-cart";
 
 const normalizeId = (value: string) => {
   return value
@@ -162,9 +164,64 @@ export const buildOrderCartWhatsappMessage = (
   return lines.join("\n");
 };
 
+const isStoredOrderCartItem = (value: unknown): value is OrderCartItem => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const item = value as Partial<OrderCartItem>;
+
+  return Boolean(
+    typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      typeof item.price === "number" &&
+      typeof item.quantity === "number"
+  );
+};
+
+const readStoredOrderCartItems = (storageKey: string) => {
+  const storedValue = window.localStorage.getItem(storageKey);
+
+  if (!storedValue) {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(storedValue) as unknown;
+
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue.filter(isStoredOrderCartItem);
+  } catch {
+    return [];
+  }
+};
+
 export function OrderCartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<OrderCartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [loadedStorageKey, setLoadedStorageKey] = useState<string | null>(null);
+
+  const storageKey = useMemo(() => {
+    const ownerId = "guest";
+    return `${ORDER_CART_STORAGE_KEY_PREFIX}:${ownerId}`;
+  }, []);
+
+  useEffect(() => {
+    const storedItems = readStoredOrderCartItems(storageKey);
+    setItems(storedItems);
+    setLoadedStorageKey(storageKey);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (loadedStorageKey !== storageKey) {
+      return;
+    }
+
+    window.localStorage.setItem(storageKey, JSON.stringify(items));
+  }, [items, loadedStorageKey, storageKey]);
 
   const openCart = useCallback(() => setIsCartOpen(true), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
