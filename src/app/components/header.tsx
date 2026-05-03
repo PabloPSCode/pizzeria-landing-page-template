@@ -6,7 +6,9 @@ import { useEffect, useState, type ElementType } from "react";
 import {
   Cart,
   LandingHeader,
+  OrderFinalizationModal,
 } from "../../libs/react-ultimate-components/src";
+import type { OrderFinalizationPayload } from "../../libs/react-ultimate-components/src/components/modals/OrderFinalizationModal/index";
 import { landingNavigationItems, MONLEVADE_WHATSAPP } from "../../mock";
 import { sendMessageWhatsapp } from "../../utils/helpers";
 import {
@@ -21,8 +23,33 @@ import {
   Title,
 } from "./ui";
 
+const ORDER_FINALIZATION_ADDRESSES_STORAGE_KEY =
+  "@monlevadepizzas:order-finalization-addresses";
+
+const formatBRL = (value: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+
+const buildAddressSummary = (
+  selectedAddress: OrderFinalizationPayload["selectedAddress"]
+) => {
+  const addressLine = `${selectedAddress.address}, ${
+    selectedAddress.residenceNumber
+  }${selectedAddress.complement ? ` - ${selectedAddress.complement}` : ""}`;
+  const locationLine = `${selectedAddress.neighborhood} - ${
+    selectedAddress.city
+  }/${selectedAddress.state}${
+    selectedAddress.zipCode ? ` - CEP ${selectedAddress.zipCode}` : ""
+  }`;
+
+  return [selectedAddress.label, addressLine, locationLine];
+};
+
 export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isOrderFinalizationOpen, setIsOrderFinalizationOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -31,6 +58,7 @@ export default function Header() {
     isCartOpen,
     openCart,
     closeCart,
+    clearCart,
     setItems,
   } = useOrderCart();
   const { storeData } = useStore();
@@ -49,13 +77,6 @@ export default function Header() {
     return normalizedPathname === "/" ? href : `/${href}`;
   };
 
-  const handleWhatsappOrder = (message?: string) => {
-    sendMessageWhatsapp(
-      message ?? "Olá, quero montar um pedido na MonlevadePizzas.",
-      storeData.contact?.whatsapp ?? MONLEVADE_WHATSAPP
-    );
-  };
-
   const handleGoHome = () => {
     router.push("/");
   };
@@ -63,11 +84,33 @@ export default function Header() {
   const handleProceedToCheckout = () => {
     if (!items.length) return;
 
+    closeCart();
+    setIsOrderFinalizationOpen(true);
+  };
+
+  const handleFinalizeOrder = ({
+    selectedAddress,
+    items: orderItems,
+    deliveryFee,
+    total,
+  }: OrderFinalizationPayload) => {
+    const message = [
+      buildOrderCartWhatsappMessage(orderItems, storeData.store.name),
+      "",
+      "Endereço de entrega:",
+      ...buildAddressSummary(selectedAddress),
+      "",
+      `Taxa de entrega: ${formatBRL(deliveryFee)}`,
+      `Total do pedido: ${formatBRL(total)}`,
+    ].join("\n");
+
     sendMessageWhatsapp(
-      buildOrderCartWhatsappMessage(items, storeData.store.name),
+      message,
       storeData.contact?.whatsapp ?? MONLEVADE_WHATSAPP
     );
-    closeCart();
+
+    setIsOrderFinalizationOpen(false);
+    clearCart();
   };
   const NavComponent = LandingHeader.Nav as never as ElementType;
   const NavItemComponent = LandingHeader.Nav.Item as never as ElementType;
@@ -182,6 +225,14 @@ export default function Header() {
         checkoutButtonText="Finalizar pedido"
         keepBuyingButtonText="Continuar comprando"
         emptyCartMessage="Seu carriho está vazio."
+      />
+
+      <OrderFinalizationModal
+        open={isOrderFinalizationOpen}
+        onClose={() => setIsOrderFinalizationOpen(false)}
+        items={items}
+        onFinalize={handleFinalizeOrder}
+        storageKey={ORDER_FINALIZATION_ADDRESSES_STORAGE_KEY}
       />
     </>
   );

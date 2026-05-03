@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { formatBRL } from "../../../utils/format";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export interface Address {
   id: string;
@@ -45,20 +44,12 @@ export default function DeliveryOptionsCard({
     string | undefined
   >(selectedOptionId ?? options[0]?.id);
 
-  const activeSelectedId = selectedOptionId ?? internalSelectedId;
-
-  useEffect(() => {
-    if (selectedOptionId) {
-      setInternalSelectedId(selectedOptionId);
-    }
-  }, [selectedOptionId]);
-
-  useEffect(() => {
-    if (!options.length) return;
-    if (!activeSelectedId) {
-      setInternalSelectedId(options[0].id);
-    }
-  }, [options, activeSelectedId]);
+  const normalizedInternalSelectedId =
+    internalSelectedId && options.some((option) => option.id === internalSelectedId)
+      ? internalSelectedId
+      : undefined;
+  const activeSelectedId =
+    selectedOptionId ?? normalizedInternalSelectedId ?? options[0]?.id;
   const selectedOptionLabel = useMemo(() => {
     if (!activeSelectedId) return undefined;
     return options.find((opt) => opt.id === activeSelectedId)?.label;
@@ -159,4 +150,3 @@ export default function DeliveryOptionsCard({
     </div>
   );
 }
-

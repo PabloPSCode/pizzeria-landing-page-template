@@ -136,6 +136,7 @@ export { default as Tooltip } from "./components/miscellaneous/Tooltip/index";
 // Modals
 export { default as ModalsDestructiveModal } from "./components/modals/DestructiveModal/index";
 export { default as ModalsGenericModal } from "./components/modals/GenericModal/index";
+export { default as OrderFinalizationModal } from "./components/modals/OrderFinalizationModal/index";
 export { default as OrderAssistentModal } from "./components/modals/OrderAssistentModal/index";
 export { default as PizzaOrderAssistentModal } from "./components/modals/PizzaOrderAssistentModal/index";
 

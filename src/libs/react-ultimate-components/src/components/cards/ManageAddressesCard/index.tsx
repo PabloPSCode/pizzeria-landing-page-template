@@ -1,13 +1,12 @@
 "use client";
 
-/* eslint-disable react-hooks/set-state-in-effect */
 import {
   PencilSimpleIcon,
   PlusCircleIcon,
   TrashIcon,
 } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import DestructiveModal from "../../modals/DestructiveModal";
 import { type ManageAddressFormValues } from "./ManageAddressModal";
 import ManageAddressModal from "./ManageAddressModal";
@@ -52,20 +51,12 @@ export default function ManageAddressesCard({
   const [addressPendingRemoval, setAddressPendingRemoval] =
     useState<Address | null>(null);
 
-  const activeSelectedId = selectedAddressId ?? internalSelectedId;
-
-  useEffect(() => {
-    if (selectedAddressId) {
-      setInternalSelectedId(selectedAddressId);
-    }
-  }, [selectedAddressId]);
-
-  useEffect(() => {
-    if (!addresses.length) return;
-    if (!activeSelectedId) {
-      setInternalSelectedId(addresses[0].id);
-    }
-  }, [addresses, activeSelectedId]);
+  const normalizedInternalSelectedId =
+    internalSelectedId && addresses.some((address) => address.id === internalSelectedId)
+      ? internalSelectedId
+      : undefined;
+  const activeSelectedId =
+    selectedAddressId ?? normalizedInternalSelectedId ?? addresses[0]?.id;
 
   const selectedAddressLabel = useMemo(() => {
     if (!activeSelectedId) return undefined;
@@ -257,4 +248,3 @@ export default function ManageAddressesCard({
     </section>
   );
 }
-
