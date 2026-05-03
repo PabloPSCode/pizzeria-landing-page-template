@@ -18,8 +18,6 @@ export interface Address {
   residenceNumber: string;
   complement?: string;
   neighborhood: string;
-  city: string;
-  state: string;
   zipCode: string;
   country?: string;
 }
@@ -182,7 +180,7 @@ export default function ManageAddressesCard({
                       {address.complement ? ` - ${address.complement}` : ""}
                     </span>
                     <span className="text-xs sm:text-sm text-foreground/80">
-                      {address.neighborhood} - {address.city}/{address.state}
+                      {address.neighborhood}
                       {address.zipCode ? ` - CEP ${address.zipCode}` : ""}
                     </span>
                   </div>
@@ -229,11 +227,7 @@ export default function ManageAddressesCard({
           addressPendingRemoval
             ? `${addressPendingRemoval.address}, ${
                 addressPendingRemoval.residenceNumber
-              }${
-                addressPendingRemoval.city
-                  ? ` - ${addressPendingRemoval.city}/${addressPendingRemoval.state}`
-                  : ""
-              }`
+              }${addressPendingRemoval.zipCode ? ` - CEP ${addressPendingRemoval.zipCode}` : ""}`
             : undefined
         }
         cancelButtonLabel="Cancelar"

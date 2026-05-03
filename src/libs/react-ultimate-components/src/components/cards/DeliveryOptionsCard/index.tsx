@@ -10,8 +10,6 @@ export interface Address {
   residenceNumber: string;
   complement?: string;
   neighborhood: string;
-  city: string;
-  state: string;
   zipCode: string;
   country?: string;
 }
@@ -91,8 +89,8 @@ export default function DeliveryOptionsCard({
             <span className="font-semibold text-foreground">
               {`${address.address}, ${address.residenceNumber}${
                 address.complement ? `, ${address.complement}` : ""
-              }, ${address.neighborhood}, ${address.city} - ${address.state}, ${
-                address.zipCode
+              }, ${address.neighborhood}${
+                address.zipCode ? ` - CEP ${address.zipCode}` : ""
               }`}
               <button
                 onClick={onBack}

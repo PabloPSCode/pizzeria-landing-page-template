@@ -1,159 +1,15 @@
 "use client";
 
 /* eslint-disable react-hooks/set-state-in-effect */
-import MaskedTextInput from "../../../inputs/MaskedTextInput";
-import SelectInput, { type Option } from "../../../inputs/SelectInput";
-import TextInput from "../../../inputs/TextInput";
-import GenericModal from "../../../modals/GenericModal";
+import cep from "cep-promise";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
+import MaskedTextInput from "../../../inputs/MaskedTextInput";
+import TextInput from "../../../inputs/TextInput";
+import GenericModal from "../../../modals/GenericModal";
 import type { Address } from "..";
 
 export type ManageAddressFormValues = Omit<Address, "id">;
-
-interface BrazilianState {
-  uf: string;
-  name: string;
-  cities: string[];
-}
-
-const brazilianStates: BrazilianState[] = [
-  {
-    uf: "AC",
-    name: "Acre",
-    cities: ["Rio Branco", "Cruzeiro do Sul", "Sena Madureira"],
-  },
-  {
-    uf: "AL",
-    name: "Alagoas",
-    cities: ["Maceió", "Arapiraca", "União dos Palmares"],
-  },
-  {
-    uf: "AM",
-    name: "Amazonas",
-    cities: ["Manaus", "Parintins", "Itacoatiara"],
-  },
-  {
-    uf: "AP",
-    name: "Amapá",
-    cities: ["Macapá", "Santana", "Oiapoque"],
-  },
-  {
-    uf: "BA",
-    name: "Bahia",
-    cities: ["Salvador", "Feira de Santana", "Ilhéus"],
-  },
-  {
-    uf: "CE",
-    name: "Ceará",
-    cities: ["Fortaleza", "Juazeiro do Norte", "Sobral"],
-  },
-  {
-    uf: "DF",
-    name: "Distrito Federal",
-    cities: ["Brasília", "Ceilândia", "Taguatinga"],
-  },
-  {
-    uf: "ES",
-    name: "Espírito Santo",
-    cities: ["Vitória", "Vila Velha", "Serra"],
-  },
-  {
-    uf: "GO",
-    name: "Goiás",
-    cities: ["Goiânia", "Anápolis", "Aparecida de Goiânia"],
-  },
-  {
-    uf: "MA",
-    name: "Maranhão",
-    cities: ["São Luís", "Imperatriz", "Caxias"],
-  },
-  {
-    uf: "MG",
-    name: "Minas Gerais",
-    cities: ["Belo Horizonte", "João Monlevade", "Uberlândia"],
-  },
-  {
-    uf: "MS",
-    name: "Mato Grosso do Sul",
-    cities: ["Campo Grande", "Dourados", "Três Lagoas"],
-  },
-  {
-    uf: "MT",
-    name: "Mato Grosso",
-    cities: ["Cuiabá", "Rondonópolis", "Sinop"],
-  },
-  {
-    uf: "PA",
-    name: "Pará",
-    cities: ["Belém", "Ananindeua", "Santarém"],
-  },
-  {
-    uf: "PB",
-    name: "Paraíba",
-    cities: ["João Pessoa", "Campina Grande", "Patos"],
-  },
-  {
-    uf: "PE",
-    name: "Pernambuco",
-    cities: ["Recife", "Olinda", "Caruaru"],
-  },
-  {
-    uf: "PI",
-    name: "Piauí",
-    cities: ["Teresina", "Parnaíba", "Picos"],
-  },
-  {
-    uf: "PR",
-    name: "Paraná",
-    cities: ["Curitiba", "Londrina", "Maringá"],
-  },
-  {
-    uf: "RJ",
-    name: "Rio de Janeiro",
-    cities: ["Rio de Janeiro", "Niterói", "Campos dos Goytacazes"],
-  },
-  {
-    uf: "RN",
-    name: "Rio Grande do Norte",
-    cities: ["Natal", "Mossoró", "Parnamirim"],
-  },
-  {
-    uf: "RO",
-    name: "Rondônia",
-    cities: ["Porto Velho", "Ji-Paraná", "Ariquemes"],
-  },
-  {
-    uf: "RR",
-    name: "Roraima",
-    cities: ["Boa Vista", "Rorainópolis", "Caracaraí"],
-  },
-  {
-    uf: "RS",
-    name: "Rio Grande do Sul",
-    cities: ["Porto Alegre", "Caxias do Sul", "Pelotas"],
-  },
-  {
-    uf: "SC",
-    name: "Santa Catarina",
-    cities: ["Florianópolis", "Joinville", "Blumenau"],
-  },
-  {
-    uf: "SE",
-    name: "Sergipe",
-    cities: ["Aracaju", "Nossa Senhora do Socorro", "Lagarto"],
-  },
-  {
-    uf: "SP",
-    name: "São Paulo",
-    cities: ["São Paulo", "Campinas", "Santos"],
-  },
-  {
-    uf: "TO",
-    name: "Tocantins",
-    cities: ["Palmas", "Araguaína", "Gurupi"],
-  },
-];
 
 interface ManageAddressModalProps {
   isOpen: boolean;
@@ -169,10 +25,36 @@ const emptyFormValues: ManageAddressFormValues = {
   residenceNumber: "",
   complement: "",
   neighborhood: "",
-  city: "",
-  state: "",
   zipCode: "",
   country: "Brasil",
+};
+
+const normalizeZipCode = (value: string) => value.replace(/\D/g, "");
+
+const formatZipCode = (value: string) => {
+  const digits = normalizeZipCode(value).slice(0, 8);
+
+  if (digits.length <= 5) {
+    return digits;
+  }
+
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
+const resolveZipCodeErrorMessage = (error: unknown) => {
+  if (!error || typeof error !== "object") {
+    return "Nao foi possivel localizar o CEP informado.";
+  }
+
+  const cepError = error as {
+    type?: string;
+  };
+
+  if (cepError.type === "validation_error") {
+    return "Informe um CEP valido com 8 digitos.";
+  }
+
+  return "Nao foi possivel localizar o CEP informado.";
 };
 
 export default function ManageAddressModal({
@@ -184,23 +66,14 @@ export default function ManageAddressModal({
 }: ManageAddressModalProps) {
   const [formValues, setFormValues] =
     useState<ManageAddressFormValues>(emptyFormValues);
+  const [isFetchingZipCode, setIsFetchingZipCode] = useState(false);
+  const [zipCodeErrorMessage, setZipCodeErrorMessage] = useState<string>();
+  const [resolvedZipCode, setResolvedZipCode] = useState<string | null>(null);
 
-  const stateOptions = useMemo<Option[]>(
-    () =>
-      brazilianStates.map((state) => ({
-        value: state.uf,
-        label: `${state.uf} - ${state.name}`,
-      })),
-    []
+  const normalizedZipCode = useMemo(
+    () => normalizeZipCode(formValues.zipCode),
+    [formValues.zipCode]
   );
-
-  const cityOptions = useMemo<Option[]>(() => {
-    const currentState = brazilianStates.find(
-      (state) => state.uf === formValues.state
-    );
-    if (!currentState) return [];
-    return currentState.cities.map((city) => ({ value: city, label: city }));
-  }, [formValues.state]);
 
   useEffect(() => {
     if (initialValues && isOpen) {
@@ -210,34 +83,88 @@ export default function ManageAddressModal({
         residenceNumber: initialValues.residenceNumber,
         complement: initialValues.complement ?? "",
         neighborhood: initialValues.neighborhood,
-        city: initialValues.city,
-        state: initialValues.state,
         zipCode: initialValues.zipCode,
         country: initialValues.country ?? "Brasil",
       });
+      setResolvedZipCode(normalizeZipCode(initialValues.zipCode));
     } else if (isOpen) {
       setFormValues(emptyFormValues);
+      setResolvedZipCode(null);
     }
+
+    setIsFetchingZipCode(false);
+    setZipCodeErrorMessage(undefined);
   }, [initialValues, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || normalizedZipCode.length !== 8) {
+      setIsFetchingZipCode(false);
+      return;
+    }
+
+    if (resolvedZipCode === normalizedZipCode) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchZipCodeData = async () => {
+      setIsFetchingZipCode(true);
+      setZipCodeErrorMessage(undefined);
+
+      try {
+        const zipCodeData = await cep(normalizedZipCode);
+
+        if (isCancelled) {
+          return;
+        }
+
+        setFormValues((previousValues) => ({
+          ...previousValues,
+          zipCode: formatZipCode(zipCodeData.cep),
+          address: zipCodeData.street || previousValues.address,
+          neighborhood: zipCodeData.neighborhood || previousValues.neighborhood,
+          country: previousValues.country || "Brasil",
+        }));
+        setResolvedZipCode(normalizedZipCode);
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        setZipCodeErrorMessage(resolveZipCodeErrorMessage(error));
+      } finally {
+        if (!isCancelled) {
+          setIsFetchingZipCode(false);
+        }
+      }
+    };
+
+    void fetchZipCodeData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, normalizedZipCode, resolvedZipCode]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-  };
 
-  const handleSelectState = (option: Option | null) => {
-    setFormValues((prev) => ({
-      ...prev,
-      state: option?.value?.toString() ?? "",
-      city: "",
-    }));
-  };
+    if (name === "zipCode") {
+      const nextNormalizedZipCode = normalizeZipCode(value);
 
-  const handleSelectCity = (option: Option | null) => {
-    setFormValues((prev) => ({
-      ...prev,
-      city: option?.value?.toString() ?? "",
-    }));
+      setZipCodeErrorMessage(undefined);
+      if (nextNormalizedZipCode.length !== 8) {
+        setIsFetchingZipCode(false);
+      }
+      setResolvedZipCode((currentResolvedZipCode) =>
+        currentResolvedZipCode === nextNormalizedZipCode
+          ? currentResolvedZipCode
+          : null
+      );
+    }
+
+    setFormValues((previousValues) => ({ ...previousValues, [name]: value }));
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -251,15 +178,13 @@ export default function ManageAddressModal({
       formValues.address.trim() !== "" &&
       formValues.residenceNumber.trim() !== "" &&
       formValues.neighborhood.trim() !== "" &&
-      formValues.city.trim() !== "" &&
-      formValues.state.trim() !== "" &&
       formValues.zipCode.trim() !== ""
     );
   }, [formValues]);
 
   const actionLabel =
-    mode === "edit" ? "Salvar alterações" : "Cadastrar endereço";
-  const title = mode === "edit" ? "Editar endereço" : "Novo endereço";
+    mode === "edit" ? "Salvar alteracoes" : "Cadastrar endereco";
+  const title = mode === "edit" ? "Editar endereco" : "Novo endereco";
 
   return (
     <GenericModal
@@ -273,14 +198,15 @@ export default function ManageAddressModal({
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextInput
-          label="Identificação*"
+          label="Identificacao*"
           name="label"
           value={formValues.label}
           onChange={handleChange}
           placeholder="Casa, trabalho..."
           required
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <MaskedTextInput
             mask="00000-000"
             label="CEP*"
@@ -288,6 +214,12 @@ export default function ManageAddressModal({
             value={formValues.zipCode}
             onChange={handleChange}
             placeholder="00000-000"
+            helperText={
+              isFetchingZipCode
+                ? "Buscando endereco automaticamente..."
+                : "Ao informar o CEP, rua e bairro sao preenchidos automaticamente."
+            }
+            errorMessage={zipCodeErrorMessage}
             required
           />
           <TextInput
@@ -309,16 +241,15 @@ export default function ManageAddressModal({
           required
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TextInput
-            label="Número*"
+            label="Numero*"
             name="residenceNumber"
             value={formValues.residenceNumber}
             onChange={handleChange}
             placeholder="123"
             required
           />
-
           <TextInput
             label="Complemento"
             name="complement"
@@ -328,53 +259,18 @@ export default function ManageAddressModal({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <SelectInput
-            label="Cidade*"
-            options={cityOptions}
-            placeholder={
-              formValues.state
-                ? "Selecione sua cidade"
-                : "Selecione um estado antes"
-            }
-            isDisabled={!formValues.state}
-            onSelectOption={handleSelectCity}
-            value={
-              formValues.city
-                ? { value: formValues.city, label: formValues.city }
-                : null
-            }
-            isSearchable
-            notFoundOptionsMessage="Cidade não encontrada."
-          />
-          <SelectInput
-            label="UF*"
-            options={stateOptions}
-            placeholder="Selecione o estado"
-            onSelectOption={handleSelectState}
-            value={
-              formValues.state
-                ? stateOptions.find(
-                    (option) => option.value === formValues.state
-                  ) ?? null
-                : null
-            }
-            isSearchable
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+        <div className="flex flex-col justify-end gap-3 pt-2 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center rounded-md border border-border-card px-4 py-2 text-xs sm:text-sm font-medium text-foreground"
+            className="inline-flex items-center justify-center rounded-md border border-border-card px-4 py-2 text-xs font-medium text-foreground sm:text-sm"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={!isValid}
-            className="inline-flex items-center justify-center rounded-md bg-primary-500 px-4 py-2 text-xs sm:text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-md bg-primary-500 px-4 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
           >
             {actionLabel}
           </button>
@@ -383,4 +279,3 @@ export default function ManageAddressModal({
     </GenericModal>
   );
 }
-

@@ -38,9 +38,7 @@ const buildAddressSummary = (
   const addressLine = `${selectedAddress.address}, ${
     selectedAddress.residenceNumber
   }${selectedAddress.complement ? ` - ${selectedAddress.complement}` : ""}`;
-  const locationLine = `${selectedAddress.neighborhood} - ${
-    selectedAddress.city
-  }/${selectedAddress.state}${
+  const locationLine = `${selectedAddress.neighborhood}${
     selectedAddress.zipCode ? ` - CEP ${selectedAddress.zipCode}` : ""
   }`;
 

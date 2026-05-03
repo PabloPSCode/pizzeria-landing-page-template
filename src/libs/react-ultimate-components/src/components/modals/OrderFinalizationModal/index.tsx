@@ -30,8 +30,6 @@ const isStoredAddress = (value: unknown): value is Address => {
       typeof address.address === "string" &&
       typeof address.residenceNumber === "string" &&
       typeof address.neighborhood === "string" &&
-      typeof address.city === "string" &&
-      typeof address.state === "string" &&
       typeof address.zipCode === "string",
   );
 };
@@ -291,8 +289,7 @@ export default function OrderFinalizationModal({
                       {buildAddressLabel(selectedAddress)}
                     </p>
                     <p className="mt-1 text-xs text-foreground/70">
-                      {selectedAddress.neighborhood} - {selectedAddress.city}/
-                      {selectedAddress.state} - CEP {selectedAddress.zipCode}
+                      {selectedAddress.neighborhood} - CEP {selectedAddress.zipCode}
                     </p>
                   </div>
                 </section>
