@@ -12,9 +12,12 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   BannerCarousel,
+  Button,
   CategoryCard,
+  Paragraph,
   ProductCard,
 } from "../libs/react-ultimate-components/src";
+import VideoSection from "../libs/react-ultimate-components/src/components/elements/VideoSection";
 import {
   landingInfos,
   menuCategories,
@@ -125,30 +128,103 @@ export default function Home() {
 
   const handleWhatsappOrder = (productName?: string) => {
     const baseMessage = productName
-      ? `Olá, quero pedir ${productName} na MonlevadePizzas.`
+      ? `Olá, quero finalizar meu pedido ${productName} na MonlevadePizzas.`
       : "Olá, quero montar um pedido na MonlevadePizzas.";
 
     sendMessageWhatsapp(
       baseMessage,
-      storeData.contact?.whatsapp ?? "5531985187963",
+      storeData.contact?.whatsapp ?? "553194817962",
     );
   };
+
+  function scrollToSection(sectionId: string) {
+    document.getElementById(sectionId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
   return (
     <main
       id="topo"
       className="min-h-screen w-full bg-background text-foreground"
     >
-      <BannerCarousel
-        items={heroSlides}
-        showDots
-        loop
-        autoplay
-        className="w-full"
-      />
+      <section className="relative overflow-hidden ">
+        <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-yellow-900 via-primary-800/50 to-primary-500/18 flex flex-col items-center justify-center" />
+        <VideoSection
+          size="full"
+          
+          videoUrl="/pizza.mp4"
+          showPlayPauseButton={false}
+          showOverlay
+          containerClassName="!min-h-[82vh] bg-transparent"
+        />
+      </section>
+
+      <div className="absolute inset-0 z-30 flex flex-col items-center justify-center h-full">
+        <div className="mx-auto my-auto min-h-[95vh] flex w-full max-w-7xl items-center justify-center2 px-6 pb-16 lg:px-8">
+          <RevealContainer
+            once
+            className="pointer-events-auto m-auto space-y-8"
+          >
+            <Title
+              as="h1"
+              className="max-w-[70vw] sm:max-w-[50vw]  xl:max-w-[50vw] text-center !text-3xl leading-[0.96] tracking-[-0.05em] text-white sm:!text-5xl mt-12"
+            >
+              As melhores pizzas de Monlevade, feitas com ingredientes frescos
+            </Title>
+
+            <Paragraph
+              content="Deliciosas pizzas feitas com ingredientes frescos e entregues rapidamente na sua porta."
+              className="max-w-[70vw] sm:max-w-[50vw] xl:max-w-[40vw] mx-auto text-center !text-lg md:!text-xl leading-[1.55] text-white/80"
+            />
+
+            <FadeContainer
+              once
+              className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+            >
+              <Button
+                type="button"
+                label="Ver cardápio"
+                onClick={() => scrollToSection("cardapio")}
+                className="!rounded-full !bg-secondary-500 !px-8 !py-4 !text-black !shadow-none"
+              />
+            </FadeContainer>
+          </RevealContainer>
+        </div>
+      </div>
+
+      {/* <Section
+        id="promocoes"
+        className="bg-white py-16 sm:py-20 flex"
+        containerClassName="gap-10 flex w-full"
+      >
+        <FadeContainer
+          once
+          className="flex justify-center items-center mx-auto gap-3"
+        >
+          <ListIcon className="w-6 h-6 sm:w-8 sm:h-8" />
+          <Subtitle
+            as="span"
+            className="text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-center mx-auto text-black w-fit mt-1"
+          >
+            Promoções
+          </Subtitle>
+        </FadeContainer>
+        <BannerCarousel
+          items={heroSlides}
+          showDots
+          loop
+          autoplay
+          className="w-full"
+        />
+      </Section> */}
 
       <Section id="cardapio" className="bg-white" containerClassName="gap-6">
-        <FadeContainer once className="flex justify-center items-center mx-auto gap-3">
+        <FadeContainer
+          once
+          className="flex justify-center items-center mx-auto gap-3"
+        >
           <ListIcon className="w-6 h-6 sm:w-8 sm:h-8" />
           <Subtitle
             as="span"
@@ -194,9 +270,11 @@ export default function Home() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredProducts.map((product, index) => {
-            const isPizzaProduct = PIZZA_CATEGORY_SLUGS.has(product.categorySlug);
+            const isPizzaProduct = PIZZA_CATEGORY_SLUGS.has(
+              product.categorySlug,
+            );
             const usesOrderAssistant = ORDER_ASSISTANT_CATEGORY_SLUGS.has(
-              product.categorySlug
+              product.categorySlug,
             );
 
             return (
@@ -229,7 +307,7 @@ export default function Home() {
                           title: product.name,
                           imageUrl: product.image,
                         },
-                        order
+                        order,
                       )
                     }
                     onOrderFinish={(order) =>
@@ -239,7 +317,7 @@ export default function Home() {
                           title: product.name,
                           imageUrl: product.image,
                         },
-                        order
+                        order,
                       )
                     }
                     onAddToCart={
@@ -258,38 +336,19 @@ export default function Home() {
         </div>
       </Section>
 
-   
-
       <Section
         id="sobre"
-        className="bg-secondary-500 py-16 sm:py-20 flex"
-        containerClassName="gap-10 flex w-full"
+        className="flex bg-[#fffaf2] py-16 sm:py-20 [background-image:linear-gradient(45deg,rgba(199,73,30,0.08)_25%,transparent_25%,transparent_75%,rgba(199,73,30,0.08)_75%,rgba(199,73,30,0.08)),linear-gradient(45deg,rgba(216,150,31,0.08)_25%,transparent_25%,transparent_75%,rgba(216,150,31,0.08)_75%,rgba(216,150,31,0.08))] [background-position:0_0,26px_26px] [background-size:52px_52px]"
+        containerClassName="gap-10 flex flex-col items-center w-full"
       >
+          <Title as="h2" className="lg:max-w-2xl">
+            Sobre nós
+          </Title>
         <div className="w-full flex flex-col xl:flex-row gap-12">
-          <div className="flex flex-col w-full gap-8">
-            <RevealContainer once className="w-full flex flex-col items-center xl:items-start text-center xl:text-left">
-              <Title as="h2" className="lg:max-w-2xl">
-                Sobre nós
-              </Title>
-              <Subtitle className="mt-5 w-full lg-max-w-xl !text-lg !sm:text-2xl">
-                A {storeData.store.name} reúne pizzas salgadas, pizzas doces,
-                bordas recheadas, burguers artesanais e croissants. Faça seu
-                pedido e receba no conforto da sua casa.
-              </Subtitle>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#cardapio"
-                  className="inline-flex rounded-full bg-primary-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-600"
-                >
-                  Ver cardápio
-                </a>
-              </div>
-            </RevealContainer>
-          </div>
 
           <div className="w-full">
             <FadeContainer once delayMs={120}>
-              <div className="flex flex-col sm:flex-row items-center gap-12">
+              <div className="flex flex-col sm:flex-row sm:pl-24 justify-center items-center gap-6 mx-auto w-full">
                 {landingInfos.map((infoItem) => {
                   const IconComponent = INFO_ICON_BY_KEY[infoItem.icon];
 
@@ -304,6 +363,7 @@ export default function Home() {
                         />
                       }
                       title={infoItem.title}
+                      className="max-w-xs"
                     />
                   );
                 })}
