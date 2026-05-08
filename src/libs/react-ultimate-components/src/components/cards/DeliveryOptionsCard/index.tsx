@@ -23,10 +23,11 @@ export interface Option {
 
 interface DeliveryOptionsCardProps {
   options: Option[];
-  address: Address;
+  address?: Address | null;
   selectedOptionId?: string;
   onSelectOption?: (optionId: string) => void;
   onBack?: () => void;
+  pickupDescription?: string;
   className?: string;
 }
 
@@ -37,6 +38,7 @@ export default function DeliveryOptionsCard({
   selectedOptionId,
   onSelectOption,
   onBack,
+  pickupDescription = "Retire seu pedido diretamente na loja.",
 }: DeliveryOptionsCardProps) {
   const [internalSelectedId, setInternalSelectedId] = useState<
     string | undefined
@@ -48,6 +50,10 @@ export default function DeliveryOptionsCard({
       : undefined;
   const activeSelectedId =
     selectedOptionId ?? normalizedInternalSelectedId ?? options[0]?.id;
+  const activeOption = useMemo(
+    () => options.find((opt) => opt.id === activeSelectedId),
+    [activeSelectedId, options]
+  );
   const selectedOptionLabel = useMemo(() => {
     if (!activeSelectedId) return undefined;
     return options.find((opt) => opt.id === activeSelectedId)?.label;
@@ -72,35 +78,55 @@ export default function DeliveryOptionsCard({
       <div className="flex flex-col gap-4">
         <div>
           <span className="text-base sm:text-lg font-semibold">
-            Selecione o tipo de entrega
+            Selecione como deseja receber
           </span>
           {selectedOptionLabel && (
             <p className="text-xs sm:text-sm text-foreground/70">
-              Tipo de entrega selecionado:{" "}
+              Opção selecionada:{" "}
               <span className="font-semibold text-foreground">
                 {selectedOptionLabel}
               </span>
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <p className="text-xs sm:text-sm text-foreground/70">
-            Entregar no endereço:{" "}
-            <span className="font-semibold text-foreground">
-              {`${address.address}, ${address.residenceNumber}${
-                address.complement ? `, ${address.complement}` : ""
-              }, ${address.neighborhood}${
-                address.zipCode ? ` - CEP ${address.zipCode}` : ""
-              }`}
-              <button
-                onClick={onBack}
-                className="text-xs sm:text-sm text-info-500 underline"
-              >
-                Alterar
-              </button>
-            </span>
-          </p>
-        </div>
+        {activeOption?.id === "pickup" ? (
+          <div className="flex items-center gap-2">
+            <p className="text-xs sm:text-sm text-foreground/70">
+              Retirada na loja:{" "}
+              <span className="font-semibold text-foreground">
+                {pickupDescription}
+              </span>
+            </p>
+          </div>
+        ) : address ? (
+          <div className="flex items-center gap-2">
+            <p className="text-xs sm:text-sm text-foreground/70">
+              Entregar no endereço:{" "}
+              <span className="font-semibold text-foreground">
+                {`${address.address}, ${address.residenceNumber}${
+                  address.complement ? `, ${address.complement}` : ""
+                }, ${address.neighborhood}${
+                  address.zipCode ? ` - CEP ${address.zipCode}` : ""
+                }`}
+              </span>
+              {onBack ? (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="text-xs sm:text-sm text-info-500 underline"
+                >
+                  Alterar
+                </button>
+              ) : null}
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <p className="text-xs sm:text-sm text-foreground/70">
+              Selecione um endereço para entrega ou retire na loja.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">

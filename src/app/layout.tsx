@@ -11,6 +11,7 @@ import {
 } from "next/font/google";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
 import { getStoreByDomain } from "../lib/store-data";
 import Footer from "./components/footer";
 import Header from "./components/header";
@@ -106,6 +107,7 @@ export default async function RootLayout({
         <StoreProvider value={storePayload}>
           <OrderCartProvider>
             <ThemeTokens />
+            <Toaster />
             <Header />
             {children}
             <Footer />

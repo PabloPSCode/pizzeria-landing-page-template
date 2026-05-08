@@ -147,7 +147,7 @@ export default function Footer() {
       >
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <Title as="h2" className="mt-0">
-            Contato
+            CONTATO
           </Title>
         </div>
 
@@ -202,9 +202,9 @@ export default function Footer() {
 
       <FooterRC.Root bordered className="bg-white">
         <FooterRC.Top columns={4}>
-          <FooterRC.Column items={institutionalItems} title="Navegação" />
-          <FooterRC.Column items={supportItems} title="Atendimento" />
-          <FooterRC.Column items={deliveryItems} title="Entregas" />
+          <FooterRC.Column items={institutionalItems} title="NAVEGAÇÃO" />
+          <FooterRC.Column items={supportItems} title="ATENDIMENTO" />
+          <FooterRC.Column items={deliveryItems} title="ENTREGAS" />
           <FooterRC.Column
             items={[
               {
@@ -212,7 +212,7 @@ export default function Footer() {
                 label: "Pagamento protegido",
               },
             ]}
-            title="Site seguro"
+            title="SITE SEGURO"
           />
         </FooterRC.Top>
         <FooterRC.SocialRow

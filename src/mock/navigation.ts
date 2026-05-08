@@ -1,14 +1,14 @@
 export const landingNavigationItems = [
   {
-    label: "Cardápio",
+    label: "CARDÁPIO",
     href: "#cardapio",
   },
   {
-    label: "Sobre",
+    label: "SOBRE",
     href: "#sobre",
   },
   {
-    label: "Contato",
+    label: "CONTATO",
     href: "#contato",
   },
 ];

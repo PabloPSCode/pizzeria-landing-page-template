@@ -342,7 +342,7 @@ export default function Home() {
         containerClassName="gap-10 flex flex-col items-center w-full"
       >
           <Title as="h2" className="lg:max-w-2xl">
-            Sobre nós
+            SOBRE NÓS
           </Title>
         <div className="w-full flex flex-col xl:flex-row gap-12">
 

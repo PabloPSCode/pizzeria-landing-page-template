@@ -43,7 +43,7 @@ const formatZipCode = (value: string) => {
 
 const resolveZipCodeErrorMessage = (error: unknown) => {
   if (!error || typeof error !== "object") {
-    return "Nao foi possivel localizar o CEP informado.";
+    return "Não foi possível localizar o CEP informado.";
   }
 
   const cepError = error as {
@@ -51,10 +51,10 @@ const resolveZipCodeErrorMessage = (error: unknown) => {
   };
 
   if (cepError.type === "validation_error") {
-    return "Informe um CEP valido com 8 digitos.";
+    return "Informe um CEP válido com 8 dígitos.";
   }
 
-  return "Nao foi possivel localizar o CEP informado.";
+  return "Não foi possível localizar o CEP informado.";
 };
 
 export default function ManageAddressModal({
@@ -183,8 +183,8 @@ export default function ManageAddressModal({
   }, [formValues]);
 
   const actionLabel =
-    mode === "edit" ? "Salvar alteracoes" : "Cadastrar endereco";
-  const title = mode === "edit" ? "Editar endereco" : "Novo endereco";
+    mode === "edit" ? "Salvar alterações" : "Cadastrar endereço";
+  const title = mode === "edit" ? "Editar endereço" : "Novo endereço";
 
   return (
     <GenericModal
@@ -198,7 +198,7 @@ export default function ManageAddressModal({
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <TextInput
-          label="Identificacao*"
+          label="Identificação*"
           name="label"
           value={formValues.label}
           onChange={handleChange}
@@ -216,8 +216,8 @@ export default function ManageAddressModal({
             placeholder="00000-000"
             helperText={
               isFetchingZipCode
-                ? "Buscando endereco automaticamente..."
-                : "Ao informar o CEP, rua e bairro sao preenchidos automaticamente."
+                ? "Buscando endereço automaticamente..."
+                : "Ao informar o CEP, rua e bairro são preenchidos automaticamente."
             }
             errorMessage={zipCodeErrorMessage}
             required
@@ -243,7 +243,7 @@ export default function ManageAddressModal({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TextInput
-            label="Numero*"
+            label="Número*"
             name="residenceNumber"
             value={formValues.residenceNumber}
             onChange={handleChange}

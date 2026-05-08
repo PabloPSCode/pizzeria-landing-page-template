@@ -1,27 +1,34 @@
 "use client";
 
-import { PhoneCallIcon, PizzaIcon, ShoppingCartIcon } from "@phosphor-icons/react";
+import {
+  PhoneCallIcon,
+  PizzaIcon,
+  ShoppingCartIcon,
+} from "@phosphor-icons/react";
 import { usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { useEffect, useState, type ElementType } from "react";
 import {
   Cart,
   LandingHeader,
   OrderFinalizationModal,
 } from "../../libs/react-ultimate-components/src";
-import type { OrderFinalizationPayload } from "../../libs/react-ultimate-components/src/components/modals/OrderFinalizationModal/index";
+import type {
+  FinalizedOrderData,
+  OrderFinalizationPayload,
+  OrderFinalizationResult,
+} from "../../libs/react-ultimate-components/src/components/modals/OrderFinalizationModal/index";
+import {
+  showToastError,
+  showToastLoading,
+  showToastSuccess,
+} from "../../libs/react-ultimate-components/src/utils/toasts";
 import { landingNavigationItems, MONLEVADE_WHATSAPP } from "../../mock";
 import { sendMessageWhatsapp } from "../../utils/helpers";
-import {
-  buildOrderCartWhatsappMessage,
-  useOrderCart,
-} from "../providers/OrderCartProvider";
+import { useOrderCart } from "../providers/OrderCartProvider";
 import { useStore } from "../providers/StoreProvider";
-import {
-  MobileMenuToggleButton,
-  MobilePanel,
-  Subtitle,
-  Title,
-} from "./ui";
+import { MobileMenuToggleButton, MobilePanel, Subtitle, Title } from "./ui";
+import Image from "next/image";
 
 const ORDER_FINALIZATION_ADDRESSES_STORAGE_KEY =
   "@monlevadepizzas:order-finalization-addresses";
@@ -31,19 +38,6 @@ const formatBRL = (value: number) =>
     style: "currency",
     currency: "BRL",
   }).format(value);
-
-const buildAddressSummary = (
-  selectedAddress: OrderFinalizationPayload["selectedAddress"]
-) => {
-  const addressLine = `${selectedAddress.address}, ${
-    selectedAddress.residenceNumber
-  }${selectedAddress.complement ? ` - ${selectedAddress.complement}` : ""}`;
-  const locationLine = `${selectedAddress.neighborhood}${
-    selectedAddress.zipCode ? ` - CEP ${selectedAddress.zipCode}` : ""
-  }`;
-
-  return [selectedAddress.label, addressLine, locationLine];
-};
 
 export default function Header() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -60,6 +54,12 @@ export default function Header() {
     setItems,
   } = useOrderCart();
   const { storeData } = useStore();
+  const pickupLocationText = [
+    storeData.address?.street,
+    storeData.address?.zipCode ? `CEP ${storeData.address.zipCode}` : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
 
   const normalizedPathname = pathname.replace(/^\/sites\/[^/]+/, "") || "/";
 
@@ -86,29 +86,94 @@ export default function Header() {
     setIsOrderFinalizationOpen(true);
   };
 
-  const handleFinalizeOrder = ({
+  const handleFinalizeOrder = async ({
     selectedAddress,
     items: orderItems,
+    fulfillmentMethod,
     deliveryFee,
     total,
-  }: OrderFinalizationPayload) => {
+    customerWhatsapp,
+  }: OrderFinalizationPayload): Promise<OrderFinalizationResult | void> => {
+    showToastLoading("Gerando link de pagamento...");
+
+    try {
+      const response = await fetch("/api/asaas/payment-link", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          items: orderItems,
+          selectedAddress,
+          fulfillmentMethod,
+          deliveryFee,
+          total,
+          customerWhatsapp,
+        }),
+      });
+
+      const responseBody = (await response.json()) as {
+        message?: string;
+        paymentLinkUrl?: string;
+        paymentLinkId?: string | null;
+        orderReference?: string | null;
+      };
+
+      if (!response.ok || !responseBody.paymentLinkUrl) {
+        throw new Error(
+          responseBody.message ??
+            "Não foi possível gerar o link de pagamento no momento.",
+        );
+      }
+
+      toast.dismiss("loading");
+      showToastSuccess("Link de pagamento gerado com sucesso.");
+      clearCart();
+
+      return {
+        paymentLinkUrl: responseBody.paymentLinkUrl,
+        orderReference:
+          typeof responseBody.orderReference === "string"
+            ? responseBody.orderReference
+            : undefined,
+        paymentLinkId:
+          typeof responseBody.paymentLinkId === "string"
+            ? responseBody.paymentLinkId
+            : undefined,
+        total,
+      };
+    } catch (error) {
+      toast.dismiss("loading");
+      showToastError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível gerar o link de pagamento agora. Tente novamente.",
+      );
+    }
+  };
+
+  const handleSharePaymentLink = ({
+    paymentLinkUrl,
+    orderReference,
+    total,
+    fulfillmentMethod,
+  }: FinalizedOrderData) => {
     const message = [
-      buildOrderCartWhatsappMessage(orderItems, storeData.store.name),
-      "",
-      "Endereço de entrega:",
-      ...buildAddressSummary(selectedAddress),
-      "",
-      `Taxa de entrega: ${formatBRL(deliveryFee)}`,
-      `Total do pedido: ${formatBRL(total)}`,
-    ].join("\n");
+      `Olá! Quero compartilhar o link de pagamento do meu pedido na ${storeData.store.name}.`,
+      orderReference ? `Pedido: ${orderReference}` : null,
+      fulfillmentMethod === "pickup"
+        ? "Forma de recebimento: retirada na loja"
+        : "Forma de recebimento: entrega",
+      `Total: ${formatBRL(total)}`,
+      `Link de pagamento: ${paymentLinkUrl}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     sendMessageWhatsapp(
       message,
-      storeData.contact?.whatsapp ?? MONLEVADE_WHATSAPP
+      storeData.contact?.whatsapp ?? MONLEVADE_WHATSAPP,
     );
-
-    setIsOrderFinalizationOpen(false);
-    clearCart();
   };
   const NavComponent = LandingHeader.Nav as never as ElementType;
   const NavItemComponent = LandingHeader.Nav.Item as never as ElementType;
@@ -126,11 +191,16 @@ export default function Header() {
           <button
             type="button"
             onClick={handleGoHome}
-            className="flex min-w-0 items-center gap-3"
+            className="flex min-w-0 items-center gap-1"
           >
-            <span className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full bg-primary-500 text-white shadow-sm">
-              <PizzaIcon weight="fill" className="h-5 w-5" />
-            </span>
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={40}
+              height={40}
+              className="w-12 h-12 sm:w-16 sm:h-16"
+            />
+
             <span className="flex min-w-0 flex-col items-start leading-tight">
               <Title
                 as="span"
@@ -145,10 +215,7 @@ export default function Header() {
         <LandingHeader.Center className="hidden lg:flex">
           <NavComponent className="!w-auto !overflow-x-hidden justify-center gap-10">
             {landingNavigationItems.map((item) => (
-              <NavItemComponent
-                key={item.label}
-                href={resolveHref(item.href)}
-              >
+              <NavItemComponent key={item.label} href={resolveHref(item.href)}>
                 {item.label}
               </NavItemComponent>
             ))}
@@ -156,15 +223,6 @@ export default function Header() {
         </LandingHeader.Center>
 
         <LandingHeader.Right className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden flex-col items-end leading-tight md:flex">
-            <a
-              href={`tel:${(storeData.contact?.phone ?? "").replace(/\D/g, "")}`}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-foreground transition hover:text-primary-600"
-            >
-              <PhoneCallIcon weight="bold" className="h-4 w-4" />
-              {storeData.contact?.phone ?? "(31) 98518-7963"}
-            </a>
-          </div>
           <button
             type="button"
             onClick={() => {
@@ -222,7 +280,7 @@ export default function Header() {
         onProceedToCheckout={handleProceedToCheckout}
         checkoutButtonText="Finalizar pedido"
         keepBuyingButtonText="Continuar comprando"
-        emptyCartMessage="Seu carriho está vazio."
+        emptyCartMessage="Seu carrinho está vazio."
       />
 
       <OrderFinalizationModal
@@ -230,6 +288,8 @@ export default function Header() {
         onClose={() => setIsOrderFinalizationOpen(false)}
         items={items}
         onFinalize={handleFinalizeOrder}
+        onSharePaymentLink={handleSharePaymentLink}
+        pickupLocationText={pickupLocationText}
         storageKey={ORDER_FINALIZATION_ADDRESSES_STORAGE_KEY}
       />
     </>
