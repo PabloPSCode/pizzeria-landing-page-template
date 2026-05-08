@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStoreByDomain } from "../../../../lib/store-data";
+import { StoreAddress } from "../../../../types";
 
 export const dynamic = "force-dynamic";
 
@@ -236,7 +237,7 @@ export async function POST(request: Request) {
       selectedAddress,
       normalizeDigits(customerWhatsapp),
       fulfillmentMethod,
-      storeData.address,
+      storeData.address as StoreAddress,
     ),
     billingType: "UNDEFINED",
     chargeType: "DETACHED",
