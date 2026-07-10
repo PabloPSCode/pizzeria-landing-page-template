@@ -15,7 +15,7 @@ interface AnimatedContainerProps {
 export default function AnimatedContainer({
   children,
   className,
-  once = false,
+  once = true,
   delayMs = 0,
   durationMs = 700,
   hiddenClassName,

@@ -13,7 +13,7 @@ interface FadeContainerProps {
 export default function FadeContainer({
   children,
   className,
-  once,
+  once = true,
   delayMs,
 }: FadeContainerProps) {
   return (

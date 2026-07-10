@@ -37,26 +37,52 @@
   --color-secondary-900: #382205;
   --color-secondary-950: #1c1102;
 
-  --color-background: #ffffff;
-  --color-foreground: #2a130d;
+  /* --- Surface & neutral system (Starbucks-inspired, warm-neutral canvas) --- */
+  /* Neutral Warm — the signature warm cream page canvas (never cold white) */
+  --color-background: #f2f0eb;
+  /* Text Black — warm near-black ink (not pure black) reading against cream */
+  --color-foreground: #2a1c13;
+  /* White — primary card & modal surface */
   --color-bg-card: #ffffff;
-  --color-border-card: #efe5db;
+  /* Faint warm hairline — cards lean on shadow, not borders */
+  --color-border-card: #e7e2da;
+  /* Ceramic — slightly darker cream for zone separators / soft washes */
+  --color-surface-alt: #edebe9;
+  /* Neutral Cool — quiet utility container surface */
+  --color-surface-cool: #f9f9f9;
 
-  --font-primary: var(--font-josefin-sans), var(--font-montserrat),
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
-    "Segoe UI Emoji", sans-serif;
-  --font-secondary: var(--font-montserrat), var(--font-josefin-sans),
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
-    "Segoe UI Emoji", sans-serif;
+  /* --- Design-system primitives --- */
+  /* 12px card radius + full-pill buttons */
+  --radius-card: 12px;
+  --radius-pill: 9999px;
+  /* Whisper-soft layered card shadow (2 stacked low-alpha shadows) */
+  --shadow-card: 0px 0px 0.5px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.24);
+  /* Triple-layer soft lift for the fixed nav */
+  --shadow-nav: 0 1px 3px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.06),
+    0 0 2px rgba(0, 0, 0, 0.07);
+  /* Signature press micro-interaction */
+  --button-active-scale: 0.95;
+
+  /* Inter substitutes for the proprietary SoDoSans (humanist, tight tracking) */
+  --font-primary: var(--font-inter), var(--font-montserrat), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  --font-secondary: var(--font-inter), var(--font-montserrat), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 
 :root.dark {
-  --color-background: #170b08;
-  --color-foreground: #fff5ea;
-  --color-bg-card: #27120d;
-  --color-border-card: #4d2418;
+  /* Espresso-dark bookend — the warm equivalent of the House-Green dark band */
+  --color-background: #1a120d;
+  --color-foreground: #f5efe6;
+  --color-bg-card: #241812;
+  --color-border-card: #3a281e;
+  --color-surface-alt: #221610;
+  --color-surface-cool: #201510;
+  --shadow-card: 0px 0px 0.5px 0px rgba(0, 0, 0, 0.5),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -71,10 +97,10 @@ html {
 body {
   min-height: 100vh;
   color: var(--color-foreground);
-  background:
-    radial-gradient(circle at top left, rgba(255, 156, 105, 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgba(247, 202, 79, 0.1), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #fffaf4 62%, #ffffff 100%);
+  /* Solid warm-cream color-block canvas — the system avoids gradient fills */
+  background: var(--color-background);
+  /* Tight negative tracking applied near-universally (SoDoSans signature) */
+  letter-spacing: -0.01em;
 }
 
 h1,
@@ -91,6 +117,13 @@ a {
 button {
   display: flex;
   cursor: pointer;
+  /* Signature press feedback across every button */
+  transition: transform 0.2s ease, background-color 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:not(:disabled):active {
+  transform: scale(var(--button-active-scale));
 }
 
 button:disabled {

@@ -5,7 +5,7 @@ import Paragraph from "../../typography/Paragraph";
 import Title from "../../typography/Title";
 import { PauseIcon, PlayIcon } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 export interface VideoSectionProps {
   /** Largura da seção */
@@ -48,7 +48,7 @@ export interface VideoSectionProps {
   videoClassName?: string;
 }
 
-export default function VideoSection({
+const VideoSection = memo(function VideoSection({
   size,
   title,
   description,
@@ -70,27 +70,39 @@ export default function VideoSection({
   videoClassName,
 }: VideoSectionProps) {
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isInView, setIsInView] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const videoElement = videoRef.current;
+    const el = sectionRef.current;
+    if (!el) return;
 
-    if (!videoElement) {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (!isPlaying || !isInView) {
+      video.pause();
       return;
     }
 
-    if (!isPlaying) {
-      videoElement.pause();
-      return;
-    }
+    void video.play().catch(() => setIsPlaying(false));
+  }, [isPlaying, isInView]);
 
-    void videoElement.play().catch(() => {
-      setIsPlaying(false);
-    });
-  }, [isPlaying]);
+  const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
 
   return (
     <section
+      ref={sectionRef}
       className={clsx(size === "full" ? "w-full" : "w-full max-w-7xl mx-auto")}
     >
       <div
@@ -106,7 +118,7 @@ export default function VideoSection({
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             poster={posterUrl}
             controls={showPlayPauseButton}
             className={clsx(
@@ -132,7 +144,7 @@ export default function VideoSection({
           <button
             type="button"
             aria-label={isPlaying ? "Pausar vídeo" : "Reproduzir vídeo"}
-            onClick={() => setIsPlaying((prev) => !prev)}
+            onClick={togglePlay}
             className="absolute top-3 right-3 flex items-center justify-center sm:top-4 sm:right-4 z-20 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/65 text-secondary-900 hover:bg-white/85 transition"
           >
             {isPlaying ? (
@@ -196,4 +208,6 @@ export default function VideoSection({
       </div>
     </section>
   );
-}
+});
+
+export default VideoSection;

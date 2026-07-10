@@ -13,7 +13,7 @@ interface ZoomContainerProps {
 export default function ZoomContainer({
   children,
   className,
-  once,
+  once = true,
   delayMs,
 }: ZoomContainerProps) {
   return (

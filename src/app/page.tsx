@@ -220,7 +220,7 @@ export default function Home() {
         />
       </Section> */}
 
-      <Section id="cardapio" className="bg-white" containerClassName="gap-6">
+      <Section id="cardapio" className="bg-bg-card" containerClassName="gap-6">
         <FadeContainer
           once
           className="flex justify-center items-center mx-auto gap-3"
@@ -280,7 +280,6 @@ export default function Home() {
             return (
               <ZoomContainer
                 key={product.id}
-                once={index < 6}
                 delayMs={(index % 3) * 65}
               >
                 <div className="flex h-full flex-col gap-3">
@@ -333,43 +332,6 @@ export default function Home() {
               </ZoomContainer>
             );
           })}
-        </div>
-      </Section>
-
-      <Section
-        id="sobre"
-        className="flex bg-[#fffaf2] py-16 sm:py-20 [background-image:linear-gradient(45deg,rgba(199,73,30,0.08)_25%,transparent_25%,transparent_75%,rgba(199,73,30,0.08)_75%,rgba(199,73,30,0.08)),linear-gradient(45deg,rgba(216,150,31,0.08)_25%,transparent_25%,transparent_75%,rgba(216,150,31,0.08)_75%,rgba(216,150,31,0.08))] [background-position:0_0,26px_26px] [background-size:52px_52px]"
-        containerClassName="gap-10 flex flex-col items-center w-full"
-      >
-          <Title as="h2" className="lg:max-w-2xl">
-            SOBRE NÓS
-          </Title>
-        <div className="w-full flex flex-col xl:flex-row gap-12">
-
-          <div className="w-full">
-            <FadeContainer once delayMs={120}>
-              <div className="flex flex-col sm:flex-row sm:pl-24 justify-center items-center gap-6 mx-auto w-full">
-                {landingInfos.map((infoItem) => {
-                  const IconComponent = INFO_ICON_BY_KEY[infoItem.icon];
-
-                  return (
-                    <InfoIcon
-                      key={infoItem.id}
-                      icon={
-                        <IconComponent
-                          weight="fill"
-                          className="h-12 w-12 sm:h-16 sm:w-16"
-                          aria-hidden="true"
-                        />
-                      }
-                      title={infoItem.title}
-                      className="max-w-xs"
-                    />
-                  );
-                })}
-              </div>
-            </FadeContainer>
-          </div>
         </div>
       </Section>
     </main>

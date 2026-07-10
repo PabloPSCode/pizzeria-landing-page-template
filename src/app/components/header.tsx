@@ -181,7 +181,7 @@ export default function Header() {
   return (
     <>
       <LandingHeader.Root
-        className="border-b border-border-card bg-white/95 shadow-sm backdrop-blur-md min-h-[80px] pt-5"
+        className="border-b border-border-card bg-bg-card/95 shadow-nav backdrop-blur-md p-2 min-h-[80px] flex items-center"
         size="lg"
         bordered={false}
         sticky
@@ -198,7 +198,7 @@ export default function Header() {
               alt="Logo"
               width={40}
               height={40}
-              className="w-12 h-12 sm:w-16 sm:h-16"
+              className="w-8 h-8 sm:w-10 sm:h-10"
             />
 
             <span className="flex min-w-0 flex-col items-start leading-tight">
@@ -229,7 +229,7 @@ export default function Header() {
               setShowMobileMenu(false);
               openCart();
             }}
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-card bg-white text-foreground transition hover:border-primary-500 hover:text-primary-600"
+            className="relative inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center text-foreground transition hover:border-primary-500 hover:text-primary-600"
             aria-label="Abrir carrinho"
           >
             <ShoppingCartIcon weight="bold" className="h-5 w-5" />
@@ -242,13 +242,12 @@ export default function Header() {
           <MobileMenuToggleButton
             open={showMobileMenu}
             onToggle={setShowMobileMenu}
-            className="rounded-full border border-border-card bg-white"
           />
         </LandingHeader.Right>
 
         <MobilePanel open={showMobileMenu}>
           <li className="w-full list-none px-2">
-            <div className="rounded-[28px] border border-border-card bg-white p-5 text-left shadow-sm">
+            <div className="rounded-card border border-border-card bg-bg-card p-5 text-left shadow-card">
               <Subtitle
                 as="span"
                 className="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-primary-600"
@@ -261,7 +260,7 @@ export default function Header() {
                     key={item.label}
                     href={resolveHref(item.href)}
                     onClick={() => setShowMobileMenu(false)}
-                    className="rounded-full border border-border-card bg-white px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-foreground/5"
+                    className="rounded-full border border-border-card bg-bg-card px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-foreground/5"
                   >
                     {item.label}
                   </a>

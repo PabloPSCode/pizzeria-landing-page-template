@@ -13,7 +13,7 @@ interface RevealContainerProps {
 export default function RevealContainer({
   children,
   className,
-  once,
+  once = true,
   delayMs,
 }: RevealContainerProps) {
   return (

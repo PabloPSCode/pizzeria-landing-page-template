@@ -142,7 +142,7 @@ export default function Footer() {
     <>
       <Section
         id="contato"
-        className="bg-[linear-gradient(180deg,#f7f6f2_0%,#f3f2ee_100%)] py-16 sm:py-20"
+        className="bg-surface-alt py-16 sm:py-20"
         containerClassName="gap-10"
       >
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -167,7 +167,7 @@ export default function Footer() {
                     href={item.href}
                     target={item.external ? "_blank" : undefined}
                     rel={item.external ? "noreferrer" : undefined}
-                    className="group flex min-h-[76px] items-center gap-4 rounded-[24px] border border-border-card/50 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(32,24,18,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(32,24,18,0.10)]"
+                    className="group flex min-h-[76px] items-center gap-4 rounded-card border border-border-card bg-bg-card px-5 py-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-nav"
                   >
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-500/10 text-primary-500">
                       <IconComponent weight="fill" className="h-7 w-7" />
@@ -200,7 +200,7 @@ export default function Footer() {
         </div>
       </Section>
 
-      <FooterRC.Root bordered className="bg-white">
+      <FooterRC.Root bordered className="bg-bg-card">
         <FooterRC.Top columns={4}>
           <FooterRC.Column items={institutionalItems} title="NAVEGAÇÃO" />
           <FooterRC.Column items={supportItems} title="ATENDIMENTO" />
@@ -220,7 +220,7 @@ export default function Footer() {
           iconsClassName="text-foreground/70 hover:text-foreground"
           iconsWeight="fill"
           items={socialItems}
-          className="bg-white"
+          className="bg-bg-card"
         />
         <FooterRC.Bottom>
           <div className="mb-4 flex w-full flex-col gap-4 break-words">

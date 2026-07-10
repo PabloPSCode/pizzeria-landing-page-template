@@ -4,10 +4,6 @@ export const landingNavigationItems = [
     href: "#cardapio",
   },
   {
-    label: "SOBRE",
-    href: "#sobre",
-  },
-  {
     label: "CONTATO",
     href: "#contato",
   },

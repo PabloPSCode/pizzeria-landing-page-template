@@ -15,6 +15,8 @@ const config: Config = {
         foreground: "var(--color-foreground)",
         "bg-card": "var(--color-bg-card)",
         "border-card": "var(--color-border-card)",
+        "surface-alt": "var(--color-surface-alt)",
+        "surface-cool": "var(--color-surface-cool)",
         primary: {
           50: "var(--color-primary-50)",
           100: "var(--color-primary-100)",
@@ -113,6 +115,17 @@ const config: Config = {
       },
       fontWeight: {
         regular: "400",
+      },
+      borderRadius: {
+        card: "var(--radius-card)",
+        pill: "var(--radius-pill)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        nav: "var(--shadow-nav)",
+      },
+      letterSpacing: {
+        tightbrand: "-0.01em",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

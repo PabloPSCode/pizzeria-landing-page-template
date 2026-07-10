@@ -17,7 +17,7 @@ export default function InfoCard({
   return (
     <div
       className={[
-        "min-h-[220px] overflow-hidden rounded-[28px] border border-border-card bg-bg-card p-6 shadow-sm",
+        "min-h-[220px] overflow-hidden rounded-card border border-border-card bg-bg-card p-6 shadow-card",
         className ?? "",
       ]
         .filter(Boolean)
